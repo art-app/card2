@@ -1,7 +1,9 @@
 services:
   webapp:
+    # На сервере образ берётся из GHCR (docker compose pull).
+    # build остаётся для локальной сборки (docker compose build).
+    image: ${WEBAPP_IMAGE:-ghcr.io/art-app/card2-webapp}:${IMAGE_TAG:-latest}
     build: ./webapp
-    image: trener-webapp
     container_name: trener-webapp
     restart: unless-stopped
     networks:
@@ -17,8 +19,8 @@ services:
       - "traefik.http.services.trener.loadbalancer.server.port=80"
 
   bot:
+    image: ${BOT_IMAGE:-ghcr.io/art-app/card2-bot}:${IMAGE_TAG:-latest}
     build: ./bot
-    image: trener-bot
     container_name: trener-bot
     restart: unless-stopped
     environment:
