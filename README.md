@@ -76,6 +76,51 @@ python bot.py
 - `/trener` — открыть тренажёр;
 - синяя кнопка-меню слева от поля ввода (`MenuButtonWebApp`).
 
+## Деплой на свой сервер за Traefik (Docker)
+
+В репозитории есть готовая сборка: `webapp/Dockerfile` (nginx со статикой),
+`bot/Dockerfile` (бот) и `docker-compose.yml` с метками Traefik.
+
+### 1. DNS
+
+Заведите поддомен (например `trener.example.com`) с A-записью на IP сервера.
+
+### 2. Узнать параметры своего Traefik
+
+```bash
+docker ps                                   # найти имя контейнера traefik
+docker inspect <traefik> -f '{{json .NetworkSettings.Networks}}'   # имя сети
+docker inspect <traefik> | grep -iE 'entrypoints|certificatesresolvers'
+```
+
+Нужны три значения: имя внешней сети Traefik, имя HTTPS-entrypoint
+(обычно `websecure`) и имя certresolver Let's Encrypt.
+
+### 3. Настроить и запустить
+
+```bash
+git clone <этот-репозиторий> trener && cd trener
+cp .env.example .env          # заполнить DOMAIN, TRAEFIK_*, BOT_TOKEN
+docker compose up -d --build
+```
+
+Traefik сам выпустит TLS-сертификат для `DOMAIN`. Бот при старте получит
+`WEBAPP_URL=https://${DOMAIN}/` и будет открывать страницу по этому адресу.
+
+Проверка:
+```bash
+docker compose ps
+docker compose logs -f bot
+curl -I https://trener.example.com   # ожидаем 200 и валидный сертификат
+```
+
+### Обновление
+
+```bash
+git pull
+docker compose up -d --build
+```
+
 ## Обновление вопросов
 
 Все 20 вопросов лежат в массиве `QUESTIONS` внутри `webapp/index.html`.
