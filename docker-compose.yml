@@ -2,9 +2,9 @@ services:
   webapp:
     # На сервере образ берётся из GHCR (docker compose pull).
     # build остаётся для локальной сборки (docker compose build).
-    image: ${WEBAPP_IMAGE:-ghcr.io/art-app/card2-webapp}:${IMAGE_TAG:-latest}
+    image: ${WEBAPP_IMAGE:-ghcr.io/art-app/trainer-webapp}:${IMAGE_TAG:-latest}
     build: ./webapp
-    container_name: trener-webapp
+    container_name: trainer-webapp
     restart: unless-stopped
     networks:
       - proxy
@@ -12,16 +12,16 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=${TRAEFIK_NETWORK}"
       # HTTPS-роутер
-      - "traefik.http.routers.trener.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.trener.entrypoints=${TRAEFIK_ENTRYPOINT}"
-      - "traefik.http.routers.trener.tls=true"
-      - "traefik.http.routers.trener.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
-      - "traefik.http.services.trener.loadbalancer.server.port=80"
+      - "traefik.http.routers.trainer.rule=Host(`${DOMAIN}`)"
+      - "traefik.http.routers.trainer.entrypoints=${TRAEFIK_ENTRYPOINT}"
+      - "traefik.http.routers.trainer.tls=true"
+      - "traefik.http.routers.trainer.tls.certresolver=${TRAEFIK_CERTRESOLVER}"
+      - "traefik.http.services.trainer.loadbalancer.server.port=80"
 
   bot:
-    image: ${BOT_IMAGE:-ghcr.io/art-app/card2-bot}:${IMAGE_TAG:-latest}
+    image: ${BOT_IMAGE:-ghcr.io/art-app/trainer-bot}:${IMAGE_TAG:-latest}
     build: ./bot
-    container_name: trener-bot
+    container_name: trainer-bot
     restart: unless-stopped
     environment:
       - BOT_TOKEN=${BOT_TOKEN}

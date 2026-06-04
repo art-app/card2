@@ -6,14 +6,18 @@ Telegram Mini App — тренажёр на флеш-карточках для �
 ## Что внутри
 
 ```
-trener/
-├── trener.html        # исходный дизайн-бандл (экспорт), не используется в проде
+trainer/
 ├── webapp/
-│   └── index.html     # Mini App: тот же дизайн + Telegram WebApp SDK
+│   ├── index.html      # Mini App: дизайн + Telegram WebApp SDK
+│   └── Dockerfile      # nginx со статикой
 ├── bot/
-│   ├── bot.py         # бот на aiogram 3.x — открывает Mini App
+│   ├── bot.py          # бот на aiogram 3.x — открывает Mini App
 │   ├── requirements.txt
+│   ├── Dockerfile
 │   └── .env.example
+├── .github/workflows/  # CI (PR) и Deploy (push в main → GHCR → сервер)
+├── docker-compose.yml  # webapp за Traefik + бот
+├── .env.example        # DOMAIN, TRAEFIK_*, BOT_TOKEN
 └── README.md
 ```
 
@@ -73,7 +77,7 @@ python bot.py
 
 После запуска у бота работают:
 - `/start` — приветствие и кнопка «📖 Открыть тренажёр»;
-- `/trener` — открыть тренажёр;
+- `/trainer` — открыть тренажёр;
 - синяя кнопка-меню слева от поля ввода (`MenuButtonWebApp`).
 
 ## Деплой на свой сервер за Traefik (Docker)
@@ -83,7 +87,7 @@ python bot.py
 
 ### 1. DNS
 
-Заведите поддомен (например `trener.example.com`) с A-записью на IP сервера.
+Заведите поддомен (например `trainer.example.com`) с A-записью на IP сервера.
 
 ### 2. Узнать параметры своего Traefik
 
@@ -99,7 +103,7 @@ docker inspect <traefik> | grep -iE 'entrypoints|certificatesresolvers'
 ### 3. Настроить и запустить
 
 ```bash
-git clone <этот-репозиторий> trener && cd trener
+git clone <этот-репозиторий> trainer && cd trainer
 cp .env.example .env          # заполнить DOMAIN, TRAEFIK_*, BOT_TOKEN
 docker compose up -d --build
 ```
@@ -111,7 +115,7 @@ Traefik сам выпустит TLS-сертификат для `DOMAIN`. Бот
 ```bash
 docker compose ps
 docker compose logs -f bot
-curl -I https://trener.example.com   # ожидаем 200 и валидный сертификат
+curl -I https://trainer.example.com   # ожидаем 200 и валидный сертификат
 ```
 
 ### Обновление

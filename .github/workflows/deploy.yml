@@ -7,8 +7,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  WEBAPP_IMAGE: ghcr.io/art-app/card2-webapp
-  BOT_IMAGE: ghcr.io/art-app/card2-bot
+  WEBAPP_IMAGE: ghcr.io/art-app/trainer-webapp
+  BOT_IMAGE: ghcr.io/art-app/trainer-bot
 
 jobs:
   build:

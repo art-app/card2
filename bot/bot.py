@@ -73,8 +73,8 @@ async def cmd_start(message: Message) -> None:
     await message.answer(WELCOME, reply_markup=open_kb())
 
 
-@dp.message(Command("trener"))
-async def cmd_trener(message: Message) -> None:
+@dp.message(Command("trainer"))
+async def cmd_trainer(message: Message) -> None:
     await message.answer("Открыть тренажёр:", reply_markup=open_kb())
 
 
@@ -83,7 +83,7 @@ async def cmd_help(message: Message) -> None:
     await message.answer(
         "Команды:\n"
         "/start — приветствие и кнопка запуска\n"
-        "/trener — открыть тренажёр\n"
+        "/trainer — открыть тренажёр\n"
         "/help — эта справка\n\n"
         "Тренажёр также доступен через синюю кнопку «меню» слева от поля ввода.",
         reply_markup=open_kb(),
