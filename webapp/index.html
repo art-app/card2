@@ -1,580 +1,431 @@
 <!DOCTYPE html>
-<html lang="ru"><head>
+<html lang="ru">
+<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Герменевтика · тренажёр к экзамену</title>
+<title>Герменевтика · тренажёр</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap&subset=cyrillic,cyrillic-ext,latin" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
+  *{box-sizing:border-box;margin:0;padding:0;}
   :root{
-    --bg:#eef0f6;
-    --bg-grad-1:#f4f5fb;
-    --bg-grad-2:#e7e9f4;
-    --card:#ffffff;
-    --ink:#1d2030;
-    --ink-soft:#585f76;
-    --ink-faint:#8b91a6;
-    --line:#e9ebf3;
-    --line-strong:#d8dbe8;
-    --primary:#5b54e6;
-    --primary-deep:#4942cc;
-    --primary-soft:#eeedfd;
-    --primary-soft2:#f6f5fe;
-    --correct:#1f9d57;
-    --correct-bg:#e8f7ee;
-    --correct-line:#b9e5c9;
-    --wrong:#e0533d;
-    --wrong-bg:#fdecea;
-    --wrong-line:#f6c8bd;
-    --gold:#e0a32e;
-    --r-card:22px;
-    --r-ctrl:15px;
-    --sh-sm:0 1px 2px rgba(29,32,48,.06);
-    --sh-md:0 6px 18px -8px rgba(29,32,48,.16),0 1px 3px rgba(29,32,48,.05);
-    --sh-card:0 18px 46px -22px rgba(40,36,90,.42),0 2px 8px rgba(29,32,48,.05);
-    --sh-pop:0 10px 24px -8px rgba(91,84,230,.4);
-    --safe-b:env(safe-area-inset-bottom,0px);
+    --ui:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --sys:-apple-system,BlinkMacSystemFont,'SF Pro Text','Segoe UI',sans-serif;
   }
-  *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;height:100%;}
+  html,body{height:100%;}
+
+  /* ===== theme tokens (overridden by Telegram themeParams at runtime) ===== */
+  body.tg-light{
+    --page:#efeff4; --section:#ffffff; --text:#000000; --text2:#3c3c43; --hint:#8e8e93;
+    --separator:rgba(60,60,67,.16); --line:rgba(60,60,67,.12);
+    --accent:#2481cc; --accent-text:#ffffff; --accent-soft:rgba(36,129,204,.12); --accent-deep:#1f6fb2;
+    --green:#34a853; --green-soft:rgba(52,168,83,.14); --green-line:rgba(52,168,83,.4);
+    --red:#e0533d; --red-soft:rgba(224,83,61,.12); --red-line:rgba(224,83,61,.4);
+    --field:#ffffff; --field-bd:rgba(60,60,67,.22); --chip:#f1f1f6; --section2:#f7f7fb;
+    --barbg:#dadbe3;
+  }
+  body.tg-dark{
+    --page:#17181b; --section:#242529; --text:#ffffff; --text2:#ebebf2; --hint:#8a8a92;
+    --separator:rgba(255,255,255,.12); --line:rgba(255,255,255,.08);
+    --accent:#8774e1; --accent-text:#ffffff; --accent-soft:rgba(135,116,225,.2); --accent-deep:#7563cf;
+    --green:#30d158; --green-soft:rgba(48,209,88,.16); --green-line:rgba(48,209,88,.4);
+    --red:#ff6a52; --red-soft:rgba(255,106,82,.16); --red-line:rgba(255,106,82,.4);
+    --field:#2d2e33; --field-bd:rgba(255,255,255,.13); --chip:#2d2e33; --section2:#2a2b30;
+    --barbg:#3a3b41;
+  }
+
   body{
-    font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
-    color:var(--ink);
-    background:
-      radial-gradient(130% 80% at 6% -10%, var(--bg-grad-1) 0%, transparent 60%),
-      radial-gradient(130% 80% at 96% 110%, var(--bg-grad-2) 0%, transparent 60%),
-      var(--bg);
-    background-attachment:fixed;
-    line-height:1.5;
+    font-family:var(--ui);
+    background:var(--page);
+    color:var(--text);
     -webkit-font-smoothing:antialiased;
     -webkit-tap-highlight-color:transparent;
     overscroll-behavior-y:none;
   }
   button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
-  ::selection{background:var(--primary-soft);}
+  ::selection{background:var(--accent-soft);}
 
-  .app{
-    display:flex;flex-direction:column;
-    min-height:100vh;min-height:100dvh;
-    max-width:660px;margin:0 auto;
-    position:relative;
-  }
+  #app{display:flex;flex-direction:column;height:100vh;height:100dvh;max-width:560px;margin:0 auto;}
+  #wv{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));}
+  #wv::-webkit-scrollbar{display:none;}
 
-  /* ===== TOP BAR ===== */
-  .topbar{
-    position:sticky;top:0;z-index:20;
-    background:color-mix(in srgb, var(--bg) 78%, transparent);
-    backdrop-filter:saturate(1.4) blur(14px);
-    -webkit-backdrop-filter:saturate(1.4) blur(14px);
-    border-bottom:1px solid var(--line);
-    padding:calc(11px + env(safe-area-inset-top,0px)) 16px 11px;
-  }
-  .topbar-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
-  .brand{display:flex;flex-direction:column;line-height:1.15;min-width:0;}
-  .brand .t{font-size:15.5px;font-weight:800;letter-spacing:-.01em;}
-  .brand .s{font-size:11.5px;font-weight:500;color:var(--ink-faint);letter-spacing:.01em;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
-  .tools{display:flex;gap:8px;flex:none;}
-  .icon-btn{
-    width:38px;height:38px;border-radius:12px;display:grid;place-items:center;
-    background:var(--card);border:1px solid var(--line-strong);color:var(--ink-soft);
-    box-shadow:var(--sh-sm);transition:.16s ease;
-  }
-  .icon-btn:hover{color:var(--primary);border-color:#c7c4f4;transform:translateY(-1px);}
-  .icon-btn:active{transform:scale(.93);}
-  .icon-btn.active{background:var(--primary);border-color:var(--primary);color:#fff;box-shadow:var(--sh-pop);}
-  .icon-btn svg{width:18px;height:18px;}
+  /* ===== progress strip ===== */
+  .pstrip{display:flex;align-items:center;gap:12px;margin-bottom:15px;}
+  .pstrip .bar{flex:1;height:6px;border-radius:99px;background:var(--barbg);overflow:hidden;}
+  .pstrip .bar i{display:block;height:100%;border-radius:99px;background:var(--accent);transition:width .4s cubic-bezier(.4,0,.1,1);}
+  .pstrip .ct{font-size:12.5px;font-weight:700;color:var(--hint);flex:none;font-variant-numeric:tabular-nums;}
+  .pstrip .ct b{color:var(--text);}
 
-  .ptrack{height:6px;border-radius:99px;background:#dcdfeb;overflow:hidden;margin-top:11px;}
-  .ptrack > i{display:block;height:100%;width:0;border-radius:99px;
-    background:linear-gradient(90deg,#7b74f0,var(--primary));transition:width .4s cubic-bezier(.4,0,.1,1);}
-
-  /* ===== STAGE ===== */
-  .scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:18px 16px 24px;}
-  #stage{position:relative;}
-
-  .card{
-    background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
-    box-shadow:var(--sh-card);padding:24px 22px 22px;position:relative;
-    animation:rise .42s cubic-bezier(.2,.7,.2,1) both;
-  }
-  @keyframes rise{from{transform:translateY(14px) scale(.99);}to{transform:none;}}
-  .card.from-left{animation:slideL .34s cubic-bezier(.2,.7,.2,1) both;}
-  .card.from-right{animation:slideR .34s cubic-bezier(.2,.7,.2,1) both;}
-  @keyframes slideL{from{transform:translateX(36px);}to{transform:none;}}
-  @keyframes slideR{from{transform:translateX(-36px);}to{transform:none;}}
-  @keyframes pop{0%{transform:scale(.985);}45%{transform:scale(1.012);}100%{transform:scale(1);}}
-  @keyframes shake{10%,90%{transform:translateX(-2px);}20%,80%{transform:translateX(4px);}30%,50%,70%{transform:translateX(-8px);}40%,60%{transform:translateX(8px);}}
+  /* ===== card ===== */
+  .card{background:var(--section);border-radius:18px;padding:16px 14px 15px;box-shadow:0 1px 2px rgba(0,0,0,.05);
+    animation:rise .38s cubic-bezier(.2,.7,.2,1) both;}
+  body.tg-dark .card{box-shadow:none;border:1px solid var(--line);}
+  @keyframes rise{from{transform:translateY(12px);}to{transform:none;}}
+  .card.from-left{animation:slideL .3s cubic-bezier(.2,.7,.2,1) both;}
+  .card.from-right{animation:slideR .3s cubic-bezier(.2,.7,.2,1) both;}
+  @keyframes slideL{from{transform:translateX(34px);}to{transform:none;}}
+  @keyframes slideR{from{transform:translateX(-34px);}to{transform:none;}}
+  @keyframes pop{0%{transform:scale(.99);}45%{transform:scale(1.01);}100%{transform:scale(1);}}
+  @keyframes shake{10%,90%{transform:translateX(-2px);}20%,80%{transform:translateX(4px);}30%,50%,70%{transform:translateX(-7px);}40%,60%{transform:translateX(7px);}}
   .card.fb-good{animation:pop .42s ease;}
   .card.fb-bad{animation:shake .5s cubic-bezier(.36,.07,.19,.97);}
 
-  .qhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
-  .qnum{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;letter-spacing:.02em;color:var(--primary);}
-  .qnum .dot{width:7px;height:7px;border-radius:50%;background:var(--primary);box-shadow:0 0 0 4px var(--primary-soft);}
-  .qtype{font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-faint);
-    background:#f1f2f8;border-radius:99px;padding:5px 11px;white-space:nowrap;}
-  .qtext{font-size:20px;line-height:1.34;font-weight:700;letter-spacing:-.01em;margin:0 0 18px;text-wrap:pretty;}
-  .qtext .poem{display:block;font-size:15.5px;font-weight:500;font-style:italic;color:var(--ink-soft);
-    margin-top:14px;background:var(--primary-soft2);border-left:3px solid #b9b5f3;border-radius:0 10px 10px 0;padding:11px 14px;}
+  .qhead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;}
+  .qnum{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.02em;}
+  .qnum .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px var(--accent-soft);}
+  .qtype{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--hint);
+    background:var(--chip);border-radius:99px;padding:5px 10px;white-space:nowrap;}
+  .qtext{font-size:18px;line-height:1.34;font-weight:700;letter-spacing:-.01em;color:var(--text);margin-bottom:15px;text-wrap:pretty;}
+  .qtext .poem{display:block;font-size:14.5px;font-weight:500;font-style:italic;color:var(--text2);
+    margin-top:12px;background:var(--accent-soft);border-left:3px solid var(--accent);border-radius:0 9px 9px 0;padding:11px 13px;}
 
-  /* ===== MC ===== */
-  .opt{
-    display:flex;gap:13px;align-items:center;width:100%;text-align:left;
-    border:1.5px solid var(--line-strong);background:var(--card);border-radius:var(--r-ctrl);
-    padding:15px 16px;margin-bottom:11px;font-size:15.5px;font-weight:500;line-height:1.4;
-    min-height:58px;transition:.15s ease;box-shadow:var(--sh-sm);
-  }
-  .opt:hover:not(:disabled){border-color:#bcb8f2;background:var(--primary-soft2);}
-  .opt:active:not(:disabled){transform:scale(.99);}
-  .opt .mark{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
-    font-size:14px;font-weight:800;color:var(--primary);background:var(--primary-soft);transition:.15s;}
-  .opt.correct{border-color:var(--correct-line);background:var(--correct-bg);}
-  .opt.wrong{border-color:var(--wrong-line);background:var(--wrong-bg);}
-  .opt.correct .mark{background:var(--correct);color:#fff;}
-  .opt.wrong .mark{background:var(--wrong);color:#fff;}
+  /* ===== MC options ===== */
+  .opt{display:flex;gap:12px;align-items:center;width:100%;text-align:left;
+    border:1.5px solid var(--field-bd);background:var(--section);border-radius:13px;
+    padding:13px 13px;margin-bottom:9px;font-size:15px;font-weight:500;line-height:1.35;color:var(--text);
+    min-height:54px;transition:.15s ease;}
+  .opt:not(:disabled):hover{border-color:var(--accent);background:var(--accent-soft);}
+  .opt:not(:disabled):active{transform:scale(.99);}
+  .opt .mark{flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;
+    font-size:13px;font-weight:800;color:var(--accent);background:var(--accent-soft);transition:.15s;}
+  .opt .res{margin-left:auto;flex:none;}
+  .opt .res svg{width:18px;height:18px;}
+  .opt.correct{border-color:var(--green-line);background:var(--green-soft);}
+  .opt.wrong{border-color:var(--red-line);background:var(--red-soft);}
+  .opt.correct .mark{background:var(--green);color:#fff;}
+  .opt.wrong .mark{background:var(--red);color:#fff;}
+  .opt.correct .res{color:var(--green);}
+  .opt.wrong .res{color:var(--red);}
   .opt:disabled{cursor:default;}
-  .opt .res{margin-left:auto;flex:none;font-weight:800;font-size:17px;}
-  .opt.correct .res{color:var(--correct);}
-  .opt.wrong .res{color:var(--wrong);}
 
-  /* ===== MATCH / CATEGORIZE ===== */
-  .row{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
-  .row .lbl{font-size:15px;font-weight:600;line-height:1.4;display:flex;gap:9px;align-items:flex-start;}
-  .row .lbl .tag{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;
-    font-size:12.5px;font-weight:800;color:var(--primary);background:var(--primary-soft);margin-top:1px;}
-  .selwrap{position:relative;}
-  .selwrap::after{content:"";position:absolute;right:15px;top:50%;width:9px;height:9px;
-    border-right:2px solid var(--ink-faint);border-bottom:2px solid var(--ink-faint);
-    transform:translateY(-65%) rotate(45deg);pointer-events:none;}
-  select{
-    font-family:inherit;font-size:15px;font-weight:500;color:var(--ink);background:var(--card);
-    border:1.5px solid var(--line-strong);border-radius:var(--r-ctrl);padding:14px 38px 14px 14px;
-    width:100%;min-height:52px;appearance:none;-webkit-appearance:none;box-shadow:var(--sh-sm);transition:.15s;
-  }
-  select:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft);}
-  .row.ok select{border-color:var(--correct-line);background:var(--correct-bg);}
-  .row.no select{border-color:var(--wrong-line);background:var(--wrong-bg);}
-  .row.ok .selwrap::after,.row.no .selwrap::after{opacity:.4;}
-
-  /* ===== SEQUENCE ===== */
-  .seq-hint{font-size:13px;color:var(--ink-soft);margin:0 0 13px;display:flex;gap:7px;align-items:flex-start;line-height:1.4;}
-  .seq-hint svg{width:15px;height:15px;flex:none;margin-top:2px;color:var(--primary);}
-  .seq-pool,.seq-build{display:flex;flex-direction:column;gap:10px;}
-  .seq-build{min-height:4px;margin-bottom:10px;}
-  .seq-divider{height:1px;background:var(--line);margin:4px 0 14px;position:relative;}
-  .seq-divider span{position:absolute;left:50%;top:-9px;transform:translateX(-50%);background:var(--card);
-    padding:0 12px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-faint);}
-  .chip{
-    display:flex;gap:13px;align-items:center;border:1.5px solid var(--line-strong);background:var(--card);
-    border-radius:var(--r-ctrl);padding:14px 15px;font-size:15px;font-weight:500;text-align:left;width:100%;
-    min-height:56px;transition:.15s;box-shadow:var(--sh-sm);line-height:1.38;
-  }
-  .chip:hover{border-color:#bcb8f2;background:var(--primary-soft2);}
-  .chip:active{transform:scale(.99);}
-  .chip .ord{flex:none;width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
-    font-size:14px;font-weight:800;color:#fff;background:var(--primary);}
-  .chip.pool .ord{background:#eceaff;color:var(--primary);font-size:18px;}
-  .chip.ok{border-color:var(--correct-line);background:var(--correct-bg);}
-  .chip.no{border-color:var(--wrong-line);background:var(--wrong-bg);}
-  .chip.ok .ord{background:var(--correct);}
-  .chip.no .ord{background:var(--wrong);}
-
-  /* ===== FILL ===== */
-  .fill-in{width:100%;font-family:inherit;font-size:16px;font-weight:500;color:var(--ink);background:var(--card);
-    border:1.5px solid var(--line-strong);border-radius:var(--r-ctrl);padding:15px 16px;margin-bottom:11px;
-    min-height:54px;box-shadow:var(--sh-sm);transition:.15s;}
-  .fill-in::placeholder{color:var(--ink-faint);font-weight:400;}
-  .fill-in:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft);}
-  .fill-in.ok{border-color:var(--correct-line);background:var(--correct-bg);}
-  .fill-in.no{border-color:var(--wrong-line);background:var(--wrong-bg);}
-
-  /* ===== verdict / answer ===== */
-  .verdict{display:inline-flex;align-items:center;gap:9px;font-weight:800;font-size:15.5px;
-    margin:18px 0 0;padding:9px 15px 9px 11px;border-radius:99px;animation:vin .34s cubic-bezier(.2,.8,.2,1) both;}
+  /* ===== verdict + answerbox (discoverability fix) ===== */
+  .verdict{display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:14.5px;
+    margin:16px 0 0;padding:8px 14px 8px 9px;border-radius:99px;animation:vin .32s cubic-bezier(.2,.8,.2,1) both;}
   @keyframes vin{from{transform:scale(.85);}to{transform:none;}}
-  .verdict.good{color:var(--correct);background:var(--correct-bg);}
-  .verdict.bad{color:var(--wrong);background:var(--wrong-bg);}
-  .verdict .vico{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;color:#fff;flex:none;}
-  .verdict.good .vico{background:var(--correct);}
-  .verdict.bad .vico{background:var(--wrong);}
-  .verdict .vico svg{width:14px;height:14px;}
+  .verdict.good{color:var(--green);background:var(--green-soft);}
+  .verdict.bad{color:var(--red);background:var(--red-soft);}
+  .verdict .vico{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;color:#fff;flex:none;}
+  .verdict.good .vico{background:var(--green);}
+  .verdict.bad .vico{background:var(--red);}
+  .verdict .vico svg{width:13px;height:13px;}
 
-  .answerbox{border-top:1px solid var(--line);margin-top:18px;padding-top:16px;animation:fade .35s ease both;}
-  @keyframes fade{from{transform:translateY(-5px);}to{transform:none;}}
-  .answerbox h4{display:inline-flex;align-items:center;gap:7px;margin:0 0 9px;font-size:12px;font-weight:800;
-    letter-spacing:.06em;text-transform:uppercase;color:var(--primary);}
+  .answerbox{margin-top:12px;background:var(--section2);border:1px solid var(--line);
+    border-radius:14px;padding:13px 14px;box-shadow:0 0 0 3px var(--accent-soft);scroll-margin:80px;}
+  .answerbox.flash{animation:flash 1.6s ease-in-out 1;}
+  @keyframes flash{0%,100%{box-shadow:0 0 0 3px var(--accent-soft);}45%{box-shadow:0 0 0 4px var(--accent);}}
+  .answerbox h4{display:inline-flex;align-items:center;gap:6px;margin-bottom:8px;font-size:11px;font-weight:800;
+    letter-spacing:.05em;text-transform:uppercase;color:var(--accent);}
   .answerbox h4 svg{width:14px;height:14px;}
-  .answerbox p{margin:0 0 9px;font-size:14.5px;line-height:1.55;color:var(--ink-soft);}
-  .answerbox ul{margin:8px 0 4px;padding-left:0;list-style:none;}
-  .answerbox li{margin-bottom:9px;font-size:14.5px;line-height:1.5;color:var(--ink-soft);
-    padding-left:20px;position:relative;}
-  .answerbox li::before{content:"";position:absolute;left:3px;top:8px;width:6px;height:6px;border-radius:50%;
-    background:#c5c1f0;}
-  .answerbox .strong{color:var(--ink);font-weight:700;}
+  .answerbox p{font-size:14px;line-height:1.55;color:var(--text2);margin-bottom:7px;}
+  .answerbox p:last-child{margin-bottom:0;}
+  .answerbox ul{list-style:none;margin-top:7px;}
+  .answerbox li{font-size:14px;line-height:1.5;color:var(--text2);padding-left:18px;position:relative;margin-bottom:8px;}
+  .answerbox li:last-child{margin-bottom:0;}
+  .answerbox li::before{content:"";position:absolute;left:3px;top:8px;width:5px;height:5px;border-radius:50%;background:var(--accent);opacity:.7;}
+  .answerbox .strong{color:var(--text);font-weight:700;}
 
-  /* ===== inline action buttons (check / reveal / known) ===== */
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    border:1.5px solid var(--line-strong);background:var(--card);color:var(--ink);
-    padding:13px 20px;border-radius:13px;font-size:15px;font-weight:700;
-    min-height:50px;transition:.16s ease;box-shadow:var(--sh-sm);
-  }
-  .btn:hover{border-color:#c2bef3;transform:translateY(-1px);}
-  .btn:active{transform:scale(.98);}
-  .btn.primary{background:var(--primary);color:#fff;border-color:var(--primary);box-shadow:var(--sh-pop);}
-  .btn.primary:hover{background:var(--primary-deep);border-color:var(--primary-deep);}
-  .btn.ghost{background:transparent;border-style:dashed;color:var(--ink-soft);box-shadow:none;}
-  .btn.know{background:var(--correct-bg);border-color:var(--correct-line);color:var(--correct);box-shadow:none;}
-  .btn.know.active{background:var(--correct);color:#fff;border-color:var(--correct);}
-  .btn.again{background:var(--wrong-bg);border-color:var(--wrong-line);color:var(--wrong);box-shadow:none;}
-  .btn.again.active{background:var(--wrong);color:#fff;border-color:var(--wrong);}
-  .btn.full{width:100%;}
-  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;}
-  .actions .btn{flex:1;min-width:120px;}
+  /* ===== match / categorize ===== */
+  .row{margin-bottom:13px;}
+  .row .lbl{display:flex;gap:9px;align-items:flex-start;font-size:14.5px;font-weight:600;color:var(--text);margin-bottom:7px;line-height:1.35;}
+  .row .lbl .tag{flex:none;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;
+    font-size:12px;font-weight:800;color:var(--accent);background:var(--accent-soft);margin-top:1px;}
+  .sel{position:relative;}
+  .sel select{width:100%;font-family:inherit;font-size:14px;font-weight:500;color:var(--text);background:var(--field);
+    border:1.5px solid var(--field-bd);border-radius:12px;padding:13px 34px 13px 13px;min-height:50px;
+    appearance:none;-webkit-appearance:none;line-height:1.3;transition:.15s;}
+  .sel select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  .sel::after{content:"";position:absolute;right:15px;top:50%;width:8px;height:8px;
+    border-right:2px solid var(--hint);border-bottom:2px solid var(--hint);transform:translateY(-65%) rotate(45deg);pointer-events:none;}
+  .row.ok select{border-color:var(--green-line);background:var(--green-soft);}
+  .row.no select{border-color:var(--red-line);background:var(--red-soft);}
 
-  .flag{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:600;color:var(--ink-faint);
-    background:none;border:none;margin-top:18px;padding:6px 0;transition:.15s;}
-  .flag svg{width:16px;height:16px;}
-  .flag:hover{color:var(--gold);}
-  .flag.on{color:var(--gold);}
-  .flag.on svg{fill:var(--gold);}
+  /* ===== sequence ===== */
+  .seqhint{display:flex;gap:8px;align-items:flex-start;font-size:13px;color:var(--text2);margin-bottom:13px;line-height:1.4;}
+  .seqhint svg{width:15px;height:15px;flex:none;margin-top:2px;color:var(--accent);}
+  .chip{display:flex;gap:12px;align-items:center;border:1.5px solid var(--field-bd);background:var(--section);
+    border-radius:12px;padding:13px 13px;font-size:14.5px;font-weight:500;color:var(--text);width:100%;text-align:left;
+    line-height:1.35;margin-bottom:9px;min-height:54px;transition:.15s;}
+  .chip:not(:disabled):hover{border-color:var(--accent);background:var(--accent-soft);}
+  .chip:not(:disabled):active{transform:scale(.99);}
+  .chip .ord{flex:none;width:28px;height:28px;border-radius:8px;display:grid;place-items:center;
+    font-size:14px;font-weight:800;color:#fff;background:var(--accent);}
+  .chip.pool .ord{background:var(--accent-soft);color:var(--accent);font-size:18px;}
+  .chip.ok{border-color:var(--green-line);background:var(--green-soft);}
+  .chip.no{border-color:var(--red-line);background:var(--red-soft);}
+  .chip.ok .ord{background:var(--green);}
+  .chip.no .ord{background:var(--red);}
+  .seqdiv{height:1px;background:var(--separator);margin:6px 0 18px;position:relative;}
+  .seqdiv span{position:absolute;left:50%;top:-8px;transform:translateX(-50%);background:var(--section);
+    padding:0 10px;font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--hint);white-space:nowrap;}
 
-  /* ===== BOTTOM NAV ===== */
-  .bottombar{
-    position:sticky;bottom:0;z-index:20;
-    background:color-mix(in srgb, var(--bg) 80%, transparent);
-    backdrop-filter:saturate(1.4) blur(14px);
-    -webkit-backdrop-filter:saturate(1.4) blur(14px);
-    border-top:1px solid var(--line);
-    padding:12px 16px calc(12px + var(--safe-b));
-    display:flex;align-items:center;gap:12px;
-  }
-  .nav-prev{
-    width:52px;height:52px;flex:none;border-radius:14px;display:grid;place-items:center;
-    background:var(--card);border:1.5px solid var(--line-strong);color:var(--ink-soft);box-shadow:var(--sh-sm);transition:.16s;
-  }
-  .nav-prev:hover:not(:disabled){color:var(--primary);border-color:#c2bef3;}
-  .nav-prev:active:not(:disabled){transform:scale(.93);}
-  .nav-prev:disabled{opacity:.4;cursor:default;}
-  .nav-prev svg{width:20px;height:20px;}
-  .nav-count{flex:1;text-align:center;font-size:13.5px;font-weight:700;color:var(--ink-soft);letter-spacing:.01em;}
-  .nav-count b{color:var(--ink);font-weight:800;}
-  .nav-next{
-    flex:none;min-width:130px;height:52px;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    background:var(--primary);color:#fff;border:1.5px solid var(--primary);font-size:15.5px;font-weight:800;
-    box-shadow:var(--sh-pop);transition:.16s;padding:0 18px;
-  }
-  .nav-next:hover{background:var(--primary-deep);border-color:var(--primary-deep);transform:translateY(-1px);}
-  .nav-next:active{transform:scale(.97);}
-  .nav-next svg{width:18px;height:18px;}
-  .nav-next.is-hidden{display:none;}
+  /* ===== fill ===== */
+  .fill-in{width:100%;font-family:inherit;background:var(--field);border:1.5px solid var(--field-bd);border-radius:12px;
+    padding:14px 14px;font-size:15px;font-weight:600;color:var(--text);min-height:52px;margin-bottom:9px;transition:.15s;}
+  .fill-in::placeholder{color:var(--hint);font-weight:400;}
+  .fill-in:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  .fill-in.ok{border-color:var(--green-line);background:var(--green-soft);}
+  .fill-in.no{border-color:var(--red-line);background:var(--red-soft);}
+  .ghostbtn{width:100%;border:1.5px dashed var(--field-bd);background:transparent;color:var(--hint);
+    border-radius:12px;padding:12px;font-size:13.5px;font-weight:700;margin-top:2px;}
+  .ghostbtn:active{transform:scale(.99);}
 
-  /* ===== SUMMARY ===== */
-  .summary{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
-    box-shadow:var(--sh-card);padding:30px 24px;text-align:center;animation:rise .42s cubic-bezier(.2,.7,.2,1) both;}
-  .summary .seal{width:60px;height:60px;border-radius:18px;margin:0 auto 16px;display:grid;place-items:center;
-    background:linear-gradient(140deg,#7b74f0,var(--primary));color:#fff;box-shadow:var(--sh-pop);}
-  .summary .seal svg{width:30px;height:30px;}
-  .summary h2{font-size:25px;font-weight:800;letter-spacing:-.01em;margin:0 0 6px;}
-  .summary .sub{color:var(--ink-soft);font-size:14.5px;margin:0 auto;max-width:340px;line-height:1.5;}
-  .scores{display:flex;justify-content:center;gap:14px;margin:24px 0 6px;}
-  .score{flex:1;max-width:170px;background:var(--primary-soft2);border:1px solid var(--line);border-radius:16px;padding:18px 12px;}
-  .score .big{font-size:34px;font-weight:800;line-height:1;color:var(--primary);letter-spacing:-.02em;}
-  .score .lab{font-size:12px;font-weight:600;color:var(--ink-soft);margin-top:8px;line-height:1.3;}
-  .reviewlist{margin-top:18px;font-size:14px;line-height:1.55;color:var(--ink-soft);
-    background:#fbf4e6;border:1px solid #f0e2bf;border-radius:14px;padding:14px 16px;}
-  .reviewlist.clean{background:var(--correct-bg);border-color:var(--correct-line);color:var(--correct);}
-  .reviewlist b{color:var(--ink);font-weight:800;}
-  .reviewlist.clean b{color:var(--correct);}
+  /* ===== open self-rate ===== */
+  .rate{display:flex;gap:9px;margin-top:13px;}
+  .rate .rb{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;
+    border-radius:12px;padding:12px;font-size:14px;font-weight:700;border:1.5px solid;}
+  .rate .rb svg{width:15px;height:15px;}
+  .rate .know{color:var(--green);border-color:var(--green-line);background:var(--green-soft);}
+  .rate .again{color:var(--red);border-color:var(--red-line);background:var(--red-soft);}
+  .rate .know.active{background:var(--green);color:#fff;}
+  .rate .again.active{background:var(--red);color:#fff;}
 
-  @media (min-width:560px){
-    .scroll{padding:24px 22px 28px;}
-    .card{padding:30px 30px 26px;}
-    .qtext{font-size:22px;}
-  }
-  @media (prefers-reduced-motion:reduce){
-    *{animation-duration:.01ms !important;}
-  }
+  /* ===== flag ===== */
+  .flag{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--hint);margin-top:14px;padding:4px 0;}
+  .flag svg{width:15px;height:15px;}
+  .flag.on{color:var(--accent);}
+  .flag.on svg{fill:var(--accent-soft);}
+
+  /* ===== start ===== */
+  .start{display:flex;flex-direction:column;align-items:center;text-align:center;padding:24px 8px 0;}
+  .applogo{width:72px;height:72px;border-radius:20px;display:grid;place-items:center;margin-bottom:16px;
+    background:linear-gradient(145deg,var(--accent),var(--accent-deep));}
+  .applogo svg{width:40px;height:40px;}
+  .start h3{font-size:23px;font-weight:800;letter-spacing:-.01em;color:var(--text);}
+  .start .tag{font-size:13.5px;font-weight:500;color:var(--hint);margin-top:4px;}
+  .start .desc{font-size:14px;line-height:1.55;color:var(--text2);margin-top:14px;max-width:300px;}
+  .stats{display:flex;gap:9px;margin-top:20px;width:100%;}
+  .stats .s{flex:1;background:var(--section);border:1px solid var(--line);border-radius:14px;padding:14px 6px;}
+  .stats .s .n{font-size:20px;font-weight:800;color:var(--accent);line-height:1;}
+  .stats .s .l{font-size:11px;font-weight:600;color:var(--hint);margin-top:6px;line-height:1.25;}
+  .resume{margin-top:14px;width:100%;background:var(--accent-soft);border-radius:14px;padding:12px 14px;
+    display:flex;align-items:center;gap:11px;text-align:left;}
+  .resume .ri{width:32px;height:32px;border-radius:10px;flex:none;display:grid;place-items:center;background:var(--accent);color:#fff;}
+  .resume .ri svg{width:16px;height:16px;}
+  .resume .rt{font-size:13px;font-weight:700;color:var(--text);line-height:1.2;}
+  .resume .rs{font-size:11px;color:var(--hint);margin-top:2px;}
+  .startctrls{display:flex;gap:9px;margin-top:16px;width:100%;}
+  .startctrls .sb{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:7px;
+    border:1.5px solid var(--field-bd);background:var(--section);border-radius:12px;padding:12px;
+    font-size:13px;font-weight:700;color:var(--text2);}
+  .startctrls .sb svg{width:15px;height:15px;}
+  .startctrls .sb.on{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);}
+
+  /* ===== summary ===== */
+  .summary{text-align:center;padding:18px 6px 0;animation:rise .4s cubic-bezier(.2,.7,.2,1) both;}
+  .summary .seal{width:62px;height:62px;border-radius:18px;margin:6px auto 14px;display:grid;place-items:center;
+    background:linear-gradient(145deg,var(--accent),var(--accent-deep));color:#fff;}
+  .summary .seal svg{width:32px;height:32px;}
+  .summary h3{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.01em;}
+  .summary .sub{font-size:13.5px;line-height:1.5;color:var(--text2);margin:7px auto 0;max-width:300px;}
+  .scores{display:flex;gap:10px;margin:20px 0 0;}
+  .scores .sc{flex:1;background:var(--section);border:1px solid var(--line);border-radius:15px;padding:16px 8px;}
+  .scores .sc .big{font-size:28px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:-.02em;}
+  .scores .sc .lab{font-size:11px;font-weight:600;color:var(--hint);margin-top:8px;line-height:1.25;}
+  .reviewl{margin-top:14px;font-size:13px;line-height:1.5;text-align:left;
+    background:var(--red-soft);border:1px solid var(--red-line);border-radius:13px;padding:12px 14px;color:var(--text2);}
+  .reviewl.clean{background:var(--green-soft);border-color:var(--green-line);color:var(--green);}
+  .reviewl b{color:var(--text);font-weight:800;}
+  .reviewl.clean b{color:var(--green);}
+
+  /* ===== fallback MainButton bar (browser, outside Telegram) ===== */
+  .mbtn{flex:none;display:flex;gap:10px;align-items:center;padding:9px 12px calc(10px + env(safe-area-inset-bottom,0px));
+    background:var(--page);border-top:1px solid var(--separator);}
+  .mbtn .navback{width:48px;height:48px;flex:none;border-radius:12px;display:grid;place-items:center;
+    background:var(--section);border:1.5px solid var(--field-bd);color:var(--text2);}
+  .mbtn .navback svg{width:20px;height:20px;}
+  .mbtn .b{flex:1;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:8px;
+    background:var(--accent);color:var(--accent-text);font-size:15.5px;font-weight:700;font-family:var(--sys);}
+  .mbtn .b:disabled{background:var(--barbg);color:var(--hint);}
+  .mbtn[hidden]{display:none;}
+
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;}}
 </style>
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
-<body>
-<div class="app">
-  <div class="topbar">
-    <div class="topbar-row">
-      <div class="brand">
-        <span class="t">Герменевтика</span>
-        <span class="s">тренажёр к экзамену</span>
-      </div>
-      <div class="tools">
-        <button class="icon-btn" id="shuffleBtn" title="Перемешать вопросы" aria-label="Перемешать">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"></path><path d="M4 20 21 3"></path><path d="M21 16v5h-5"></path><path d="m15 15 6 6"></path><path d="M4 4l5 5"></path></svg>
-        </button>
-        <button class="icon-btn" id="restartBtn" title="Начать заново" aria-label="Начать заново">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path></svg>
-        </button>
-      </div>
-    </div>
-    <div class="ptrack"><i id="barFill"></i></div>
-  </div>
-
-  <div class="scroll" id="scroll">
-    <div id="stage"></div>
-  </div>
-
-  <div class="bottombar">
-    <button class="nav-prev" id="prevBtn" aria-label="Назад">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"></path></svg>
-    </button>
-    <div class="nav-count" id="navCount"></div>
-    <button class="nav-next" id="nextBtn">
-      <span id="nextLbl">Дальше</span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"></path></svg>
-    </button>
-  </div>
+<body class="tg-light">
+<div id="app">
+  <div id="wv"><div id="stage"></div></div>
 </div>
 
 <script>
+/* ================= data ================= */
 const QUESTIONS = [
-{
-  id:1, type:'mc', typeName:'выбор ответа',
-  q:'Герменевтика — это…',
-  options:[
-    'способность (искусство) находить возможные способы убеждения относительно каждого данного предмета',
-    'наука и искусство толкования текста и всех видов коммуникации',
-    'теория правил лингвистического значения',
-    'всё из вышеперечисленного верно'
-  ],
-  correct:1,
-  expl:'Герменевтика — одновременно наука (система правил и методов) и искусство (требует чутья толкователя). Вариант про «способы убеждения» — это определение риторики (Аристотель), а «теория правил лингвистического значения» слишком узка. Поэтому «всё верно» не подходит.'
-},
-{
-  id:2, type:'mc', typeName:'выбор ответа',
-  q:'КИФ — это…',
+{ id:1, type:'mc', typeName:'выбор ответа', q:'Герменевтика — это…',
+  options:['способность (искусство) находить возможные способы убеждения относительно каждого данного предмета','наука и искусство толкования текста и всех видов коммуникации','теория правил лингвистического значения','всё из вышеперечисленного верно'],
+  correct:1, expl:'Герменевтика — одновременно наука (система правил и методов) и искусство (требует чутья толкователя). Вариант про «способы убеждения» — это определение риторики (Аристотель), а «теория правил лингвистического значения» слишком узка. Поэтому «всё верно» не подходит.'},
+{ id:2, type:'mc', typeName:'выбор ответа', q:'КИФ — это…',
   options:['классификация источников и форм','критика исторических форм','культурно-исторический фон','качественная интерпретация форм'],
-  correct:2,
-  expl:'КИФ — культурно-исторический фон: сведения об эпохе, культуре, политике и быте, в которых создан текст. Без него древний текст читается глазами современного человека и искажается.'
-},
-{
-  id:3, type:'mc', typeName:'выбор ответа',
-  q:'Какое утверждение относится к грамматическому анализу библейского текста?',
+  correct:2, expl:'КИФ — культурно-исторический фон: сведения об эпохе, культуре, политике и быте, в которых создан текст. Без него древний текст читается глазами современного человека и искажается.'},
+{ id:3, type:'mc', typeName:'выбор ответа', q:'Какое утверждение относится к грамматическому анализу библейского текста?',
   options:['схематизация всей исследуемой книги','семь пород еврейского глагола','диаграммирование текста','текстуальные разночтения'],
-  correct:1,
-  expl:'Грамматика изучает формы слов. В еврейском глагол имеет систему пород (биньянов) — ок. семи моделей (каль, нифаль, пиэль, пуаль, хифиль, хофаль, хитпаэль). Схематизация книги и диаграммирование — это структура/синтаксис, разночтения — текстуальная критика.'
-},
-{
-  id:4, type:'mc', typeName:'выбор ответа',
-  q:'Какое утверждение относится к каноническому подходу (канонической критике)?',
-  options:[
-    'ставит акцент только на конечной форме текста, преодолевая вопросы фона и авторства',
-    'даёт поздним произведениям доминировать над ранними',
-    'помогает бороться с ересями',
-    'использует множество методов, что затрудняет единую картину'
-  ],
-  correct:0,
-  expl:'Канонический подход (Б. Чайлдс) толкует текст в его итоговой канонической форме, а не гипотетические источники, ранние редакции или вопросы авторства. Фон и предыстория отступают перед признанным общиной Писанием.'
-},
-{
-  id:5, type:'match', typeName:'соответствие',
-  q:'Сопоставьте подходы к толкованию Писания с их определениями.',
+  correct:1, expl:'Грамматика изучает формы слов. В еврейском глагол имеет систему пород (биньянов) — ок. семи моделей (каль, нифаль, пиэль, пуаль, хифиль, хофаль, хитпаэль). Схематизация книги и диаграммирование — это структура/синтаксис, разночтения — текстуальная критика.'},
+{ id:4, type:'mc', typeName:'выбор ответа', q:'Какое утверждение относится к каноническому подходу (канонической критике)?',
+  options:['ставит акцент только на конечной форме текста, преодолевая вопросы фона и авторства','даёт поздним произведениям доминировать над ранними','помогает бороться с ересями','использует множество методов, что затрудняет единую картину'],
+  correct:0, expl:'Канонический подход (Б. Чайлдс) толкует текст в его итоговой канонической форме, а не гипотетические источники, ранние редакции или вопросы авторства. Фон и предыстория отступают перед признанным общиной Писанием.'},
+{ id:5, type:'match', typeName:'соответствие', q:'Сопоставьте подходы к толкованию Писания с их определениями.',
   left:['Доктринальный (традиционный)','Критический (модернистский)','Посткритический (постмодернистский)'],
-  options:[
-    'видит в тексте документ об исторических фактах (с искажениями); текст важен лишь для реконструкции самих фактов',
-    'исследует текст в том виде, в каком он доступен, не реконструируя факты и не задаваясь вопросом о его происхождении',
-    'безоговорочно воспринимает текст как откровение свыше; нуждается в истолковании для сегодняшней ситуации верующих'
-  ],
-  answer:[2,0,1],
-  expl:'Традиционный → откровение свыше. Критический → исторический документ с искажениями. Постмодернистский → текст как есть, без вопроса о происхождении.'
-},
-{
-  id:6, type:'match', typeName:'соответствие',
-  q:'Сопоставьте уровни чтения (по М. Адлеру) с их определениями.',
+  options:['видит в тексте документ об исторических фактах (с искажениями); текст важен лишь для реконструкции самих фактов','исследует текст в том виде, в каком он доступен, не реконструируя факты и не задаваясь вопросом о его происхождении','безоговорочно воспринимает текст как откровение свыше; нуждается в истолковании для сегодняшней ситуации верующих'],
+  answer:[2,0,1], expl:'Традиционный → откровение свыше. Критический → исторический документ с искажениями. Постмодернистский → текст как есть, без вопроса о происхождении.'},
+{ id:6, type:'match', typeName:'соответствие', q:'Сопоставьте уровни чтения (по М. Адлеру) с их определениями.',
   left:['Элементарное чтение','Инспекционное чтение','Синоптическое чтение'],
-  options:[
-    'выявляет основную структуру и главные идеи книги (беглый обзор целого)',
-    'сопоставляет данное послание с другими книгами подобного рода и тщательно анализирует содержание',
-    'определяет особенности отдельных слов и предложений (понимание на уровне фраз)'
-  ],
-  answer:[2,0,1],
-  expl:'От низшего уровня (элементарное — понять слова) к высшему (синоптическое — читать книгу в сравнении с другими).'
-},
-{
-  id:7, type:'match', typeName:'классификация',
-  q:'Отнесите каждый метод к подходу: автор-, текст- или читатель-ориентированному.',
+  options:['выявляет основную структуру и главные идеи книги (беглый обзор целого)','сопоставляет данное послание с другими книгами подобного рода и тщательно анализирует содержание','определяет особенности отдельных слов и предложений (понимание на уровне фраз)'],
+  answer:[2,0,1], expl:'От низшего уровня (элементарное — понять слова) к высшему (синоптическое — читать книгу в сравнении с другими).'},
+{ id:7, type:'match', typeName:'классификация', q:'Отнесите каждый метод к подходу: автор-, текст- или читатель-ориентированному.',
   left:['Структурализм','Критика источника','Критика теологии освобождения','Риторический критицизм','Критика редакции','Политический критицизм','Социо-исторический критицизм','Феминистический критицизм','Критика нарратива','Афро-американский критицизм'],
   options:['Автор-ориентированный','Текст-ориентированный','Читатель-ориентированный'],
-  answer:[1,0,2,1,0,2,0,2,1,2],
-  mini:true,
-  expl:'Автор-ориентированные ищут смысл в замысле и истории создания (источник, редакция, социо-исторический). Текст-ориентированные — в самом тексте как системе (структурализм, риторика, нарратив). Читатель-ориентированные — в восприятии общины (теология освобождения, политический, феминистический, афро-американский).'
-},
-{
-  id:8, type:'match', typeName:'соответствие',
-  q:'Сопоставьте внутренние критерии текстуальной критики с их обоснованием.',
+  answer:[1,0,2,1,0,2,0,2,1,2], mini:true,
+  expl:'Автор-ориентированные ищут смысл в замысле и истории создания (источник, редакция, социо-исторический). Текст-ориентированные — в самом тексте как системе (структурализм, риторика, нарратив). Читатель-ориентированные — в восприятии общины (теология освобождения, политический, феминистический, афро-американский).'},
+{ id:8, type:'match', typeName:'соответствие', q:'Сопоставьте внутренние критерии текстуальной критики с их обоснованием.',
   left:['Более сложный вариант более правдоподобен','Более короткий вариант предпочтительнее','Вариант, соответствующий авторскому стилю и узкому контексту, достовернее'],
-  options:[
-    'учёные используют статистику словоупотребления автора; переписчики меняли текст, подгоняя под своё понимание контекста',
-    'поздние переписчики устраняли «шероховатости» в тексте, а не добавляли их',
-    'чаще материал к тексту добавляли, а не сокращали, поэтому короткий текст вероятнее правилен'
-  ],
-  answer:[1,2,0],
-  expl:'Памятка: переписчики «приглаживали и добавляли». Значит более трудное и более короткое чтение — древнее.'
-},
-{
-  id:9, type:'sequence', typeName:'последовательность',
-  q:'Расставьте этапы принятия грамматических решений по порядку.',
-  items:[
-    'определите, какой вариант больше всего подходит в данном контексте',
-    'проверьте авторское использование слова во всей Библии',
-    'ознакомьтесь с вариантами',
-    'обратитесь за справкой к учебнику по грамматике'
-  ],
-  answer:[2,3,1,0],
-  expl:'Сначала собираем варианты, затем сверяемся с грамматикой и узусом автора, и только потом выбираем по контексту.'
-},
-{
-  id:10, type:'sequence', typeName:'последовательность',
-  q:'Расставьте по порядку принятие критических текстовых решений (греческие рукописи).',
-  items:[
-    'обратить внимание на качество рукописей',
-    'определить даты текстовых источников',
-    'определить генеалогическую связь между рукописями',
-    'определить временные и территориальные рамки рукописей'
-  ],
-  answer:[1,3,2,0],
-  expl:'Датировка источника → географический охват (чтение из многих регионов вероятнее оригинально) → родство рукописей (типы текста) → и в последнюю очередь относительное качество (самый субъективный критерий).'
-},
-{
-  id:11, type:'mc', typeName:'выбор + определение',
-  q:'К какому типу параллелизма относится Пс. 107:4–6?',
+  options:['учёные используют статистику словоупотребления автора; переписчики меняли текст, подгоняя под своё понимание контекста','поздние переписчики устраняли «шероховатости» в тексте, а не добавляли их','чаще материал к тексту добавляли, а не сокращали, поэтому короткий текст вероятнее правилен'],
+  answer:[1,2,0], expl:'Памятка: переписчики «приглаживали и добавляли». Значит более трудное и более короткое чтение — древнее.'},
+{ id:9, type:'sequence', typeName:'последовательность', q:'Расставьте этапы принятия грамматических решений по порядку.',
+  items:['определите, какой вариант больше всего подходит в данном контексте','проверьте авторское использование слова во всей Библии','ознакомьтесь с вариантами','обратитесь за справкой к учебнику по грамматике'],
+  answer:[2,3,1,0], expl:'Сначала собираем варианты, затем сверяемся с грамматикой и узусом автора, и только потом выбираем по контексту.'},
+{ id:10, type:'sequence', typeName:'последовательность', q:'Расставьте по порядку принятие критических текстовых решений (греческие рукописи).',
+  items:['обратить внимание на качество рукописей','определить даты текстовых источников','определить генеалогическую связь между рукописями','определить временные и территориальные рамки рукописей'],
+  answer:[1,3,2,0], expl:'Датировка источника → географический охват (чтение из многих регионов вероятнее оригинально) → родство рукописей (типы текста) → и в последнюю очередь относительное качество (самый субъективный критерий).'},
+{ id:11, type:'mc', typeName:'выбор + определение', q:'К какому типу параллелизма относится Пс. 107:4–6?',
   poem:'«Буду славить Тебя, Господи, между народами; буду воспевать Тебя среди племён…»',
   options:['синонимический','синтетический','антитетический','хиазм'],
-  correct:0,
-  expl:'Синонимический параллелизм: вторая строка повторяет мысль первой равнозначными словами — «славить»/«воспевать», «народы»/«племена». Новой идеи не вносится, мысль усиливается и дублируется.'
-},
-{
-  id:12, type:'mc', typeName:'выбор + обоснование',
-  q:'Что такое ФПЗ?',
+  correct:0, expl:'Синонимический параллелизм: вторая строка повторяет мысль первой равнозначными словами — «славить»/«воспевать», «народы»/«племена». Новой идеи не вносится, мысль усиливается и дублируется.'},
+{ id:12, type:'mc', typeName:'выбор + обоснование', q:'Что такое ФПЗ?',
   options:['фактически понесённые затраты','формы правильных значений','формы переносного значения','формы перевода значения'],
-  correct:2,
-  expl:'ФПЗ — формы переносного значения (метафора, сравнение, метонимия, гипербола, идиома…). Важны: чтобы не впасть в буквализм; чтобы верно передать авторский замысел и силу сказанного; чтобы адекватно перевести древние идиомы.'
-},
-{
-  id:13, type:'fill', typeName:'дополните фразу',
-  q:'Первое, что необходимо сделать при диаграммировании отрывка — распознать ___ и ___ предложения.',
-  inputs:2,
-  accept:[['главн','придаточн'],['независим','зависим']],
-  answer:'главные (независимые) и придаточные (зависимые) предложения',
-  expl:'Структура фразы требует двух прилагательных, согласованных с «предложения», и для разбора отрывка логично сперва различить независимые и зависимые предложения. (Вариант «подлежащее и сказуемое» — это разбор одного предложения по Reed-Kellogg, а не отрывка.)'
-},
-{
-  id:14, type:'fill', typeName:'дополните фразу',
-  q:'Вид параллелизма, при котором вторая половина фразы построена в обратном порядке (А Б В Б′ А′), называется ___.',
-  inputs:1,
-  accept:[['хиазм']],
-  answer:'хиазм (хиастический параллелизм)',
-  expl:'Перекрёстное, зеркальное расположение членов (А-Б-В-Б′-А′), симметрия вокруг центра. Название — от греческой буквы «хи» (Χ).'
-},
-{
-  id:15, type:'open', typeName:'развёрнутый ответ',
-  q:'Почему важно знать и изучать критические подходы? Назовите не менее трёх причин.',
+  correct:2, expl:'ФПЗ — формы переносного значения (метафора, сравнение, метонимия, гипербола, идиома…). Важны: чтобы не впасть в буквализм; чтобы верно передать авторский замысел и силу сказанного; чтобы адекватно перевести древние идиомы.'},
+{ id:13, type:'fill', typeName:'дополните фразу', q:'Первое, что необходимо сделать при диаграммировании отрывка — распознать ___ и ___ предложения.',
+  inputs:2, accept:[['главн','придаточн'],['независим','зависим']], answer:'главные (независимые) и придаточные (зависимые) предложения',
+  expl:'Структура фразы требует двух прилагательных, согласованных с «предложения», и для разбора отрывка логично сперва различить независимые и зависимые предложения. (Вариант «подлежащее и сказуемое» — это разбор одного предложения по Reed-Kellogg, а не отрывка.)'},
+{ id:14, type:'fill', typeName:'дополните фразу', q:'Вид параллелизма, при котором вторая половина фразы построена в обратном порядке (А Б В Б′ А′), называется ___.',
+  inputs:1, accept:[['хиазм']], answer:'хиазм (хиастический параллелизм)',
+  expl:'Перекрёстное, зеркальное расположение членов (А-Б-В-Б′-А′), симметрия вокруг центра. Название — от греческой буквы «хи» (Χ).'},
+{ id:15, type:'open', typeName:'развёрнутый ответ', q:'Почему важно знать и изучать критические подходы? Назовите не менее трёх причин.',
   model:{intro:'Под критическими подходами понимаются научные методы анализа текста (критика источника, форм, редакции, нарратива и др.).',points:[
     '<span class="strong">Понимание формирования текста</span> — видеть, какие источники и формы лежат в его основе.',
     '<span class="strong">Защита от ошибок и манипуляций</span> — критически оценивать выводы учёных, отличать обоснованное от спекулятивного.',
     '<span class="strong">Диалог с современной наукой</span> — эти методы доминируют в академическом богословии.',
-    '<span class="strong">Полезные инструменты</span> — каждый метод обращает внимание на реальный аспект текста (история, структура, нарратив, риторика).'
-  ]}
-},
-{
-  id:16, type:'open', typeName:'развёрнутый ответ',
-  q:'Назовите как минимум три вида библейского критицизма.',
+    '<span class="strong">Полезные инструменты</span> — каждый метод обращает внимание на реальный аспект текста (история, структура, нарратив, риторика).']}},
+{ id:16, type:'open', typeName:'развёрнутый ответ', q:'Назовите как минимум три вида библейского критицизма.',
   model:{intro:'Достаточно назвать три; ниже несколько с пояснениями:',points:[
     '<span class="strong">Критика источника</span> — письменные источники в основе текста.',
     '<span class="strong">Критика форм</span> — малые жанры (притча, гимн, изречение) и их «жизненная ситуация».',
     '<span class="strong">Критика редакции</span> — как редактор скомпоновал материал, его богословские акценты.',
     '<span class="strong">Текстуальная критика</span> — сравнение рукописей и разночтений.',
-    '<span class="strong">Нарративная и риторическая</span> — сюжет/персонажи и приёмы убеждения.'
-  ]}
-},
-{
-  id:17, type:'open', typeName:'развёрнутый ответ',
-  q:'Дайте формулировку постструктурализма, его основные тезисы и отличие от структурализма.',
+    '<span class="strong">Нарративная и риторическая</span> — сюжет/персонажи и приёмы убеждения.']}},
+{ id:17, type:'open', typeName:'развёрнутый ответ', q:'Дайте формулировку постструктурализма, его основные тезисы и отличие от структурализма.',
   model:{intro:'Формулировка: движение, возникшее как критика и преодоление структурализма; отрицает существование замкнутых устойчивых систем и подчёркивает нестабильность и множественность смысла.',points:[
     '<span class="strong">Смысл не фиксирован</span> — текст поливалентен, значение завершается читателем.',
     '<span class="strong">Нет универсальной системы знаков</span> — идея всеобъемлющих бинарных оппозиций отвергается.',
     '<span class="strong">«Свободная игра» означающих</span> (Деррида) — толкование незавершённо, не репрезентативно.',
-    '<span class="strong">Отличие от структурализма:</span> структурализм видит замкнутую систему устойчивых структур и стабильный смысл; постструктурализм отрицает замкнутость, утверждает подвижность смысла и упрекает структурализм в лингвизме, детерминизме и редукционизме.'
-  ]}
-},
-{
-  id:18, type:'open', typeName:'развёрнутый ответ',
-  q:'Назовите три основных компонента герменевтики и кратко объясните каждый.',
+    '<span class="strong">Отличие от структурализма:</span> структурализм видит замкнутую систему устойчивых структур и стабильный смысл; постструктурализм отрицает замкнутость, утверждает подвижность смысла и упрекает структурализм в лингвизме, детерминизме и редукционизме.']}},
+{ id:18, type:'open', typeName:'развёрнутый ответ', q:'Назовите три основных компонента герменевтики и кратко объясните каждый.',
   model:{intro:'Без любого из этих трёх элементов герменевтика невозможна:',points:[
     '<span class="strong">Текст</span> — то, что подлежит истолкованию; носитель значения в историко-культурном контексте.',
     '<span class="strong">Автор</span> — вложил в текст замысел и значение; задаёт исходный смысл.',
     '<span class="strong">Толкователь (читатель)</span> — воспринимает текст и раскрывает смысл, сближая свой «горизонт» с горизонтом текста.',
-    'Именно взаимодействие автора, текста и толкователя образует герменевтический процесс.'
-  ]}
-},
-{
-  id:19, type:'open', typeName:'развёрнутый ответ',
-  q:'Что объединяет феминизм, теологию освобождения и постколониальную теологию с точки зрения герменевтики? Не менее трёх аргументов.',
+    'Именно взаимодействие автора, текста и толкователя образует герменевтический процесс.']}},
+{ id:19, type:'open', typeName:'развёрнутый ответ', q:'Что объединяет феминизм, теологию освобождения и постколониальную теологию с точки зрения герменевтики? Не менее трёх аргументов.',
   model:{intro:'Все три — разновидности читатель-ориентированной, контекстуальной герменевтики.',points:[
     '<span class="strong">Контекст важнее текста как норма</span> — нормой становится ситуация конкретной общины, а не сам текст.',
     '<span class="strong">Тема освобождения угнетённых</span> — социального, гендерного или колониального.',
     '<span class="strong">Идеологический, ангажированный подход</span> — толкование сознательно ведётся с определённой позиции.',
-    '<span class="strong">Перенос авторитета на читателя</span> — значение определяет современный читатель и его опыт, а не авторский замысел.'
-  ]}
-},
-{
-  id:20, type:'open', typeName:'развёрнутый ответ',
-  q:'Что такое «герменевтическая спираль»?',
+    '<span class="strong">Перенос авторитета на читателя</span> — значение определяет современный читатель и его опыт, а не авторский замысел.']}},
+{ id:20, type:'open', typeName:'развёрнутый ответ', q:'Что такое «герменевтическая спираль»?',
   model:{intro:'Центральный образ книги Г. Осборна. В отличие от «герменевтического круга» (замкнутость: текст через предпонимание, предпонимание через текст), спираль подчёркивает поступательное, восходящее движение к более верному пониманию.',points:[
     'Толкователь движется <span class="strong">от части к целому и обратно</span>, и при каждом обороте понимание уточняется и поднимается на новый виток.',
     '<span class="strong">Уровень исходного значения</span> — что текст означал (замысел автора).',
-    '<span class="strong">Уровень значимости</span> — что текст означает для церкви сегодня (контекстуализация, сближение «двух горизонтов»).'
-  ]}
-}
+    '<span class="strong">Уровень значимости</span> — что текст означает для церкви сегодня (контекстуализация, сближение «двух горизонтов»).']}}
 ];
 
 const LETTERS=['А','Б','В','Г','Д','Е'];
 const KEY='germ_trainer_v2';
-let order=[], pos=0, status={}, shuffled=false, navDir=null, pendingFB=null;
 
-const stage=document.getElementById('stage');
-const scrollEl=document.getElementById('scroll');
-const barFill=document.getElementById('barFill');
-const navCount=document.getElementById('navCount');
-const nextLbl=document.getElementById('nextLbl');
-const prevBtn=document.getElementById('prevBtn');
-const nextBtn=document.getElementById('nextBtn');
-
-/* ---- icons ---- */
+/* ================= icons ================= */
 const ICO={
-  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
-  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>',
+  x:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>',
   bulb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5.76.76 1.23 1.52 1.41 2.5"/></svg>',
-  flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>',
   list:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>',
-  award:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>',
-  finish:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v18"/><path d="M5 4h14l-3 4 3 4H5"/></svg>'
+  flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><path d="M4 22v-7"/></svg>',
+  resume:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
+  shuffle:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20 21 3"/><path d="M21 16v5h-5"/><path d="m15 15 6 6"/><path d="M4 4l5 5"/></svg>',
+  spiral:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.4" fill="#fff" stroke="none"/></svg>',
+  award:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>',
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>'
 };
-/* ---- Telegram WebApp bridge ---- */
-const TG = (window.Telegram && window.Telegram.WebApp) ? window.Telegram.WebApp : null;
+
+/* ================= Telegram / fallback nav layer ================= */
+const TG = window.Telegram && window.Telegram.WebApp;
+const inTG = !!(TG && TG.platform && TG.platform!=='unknown');
 const CS = (TG && TG.CloudStorage) ? TG.CloudStorage : null;
-function buzz(p){
-  if(TG && TG.HapticFeedback){
-    try{ Array.isArray(p) ? TG.HapticFeedback.notificationOccurred('error')
-                          : TG.HapticFeedback.impactOccurred(p>=16?'medium':'light'); }catch(e){}
-  }
-  if(navigator.vibrate){ try{navigator.vibrate(p);}catch(e){} }
+let mainAction=()=>{}, backAction=()=>{};
+let accentLight='#2481cc', accentDark='#8774e1', scheme='light';
+function accentHex(){ return scheme==='dark'?accentDark:accentLight; }
+function mutedHex(){ return scheme==='dark'?'#3a3b41':'#cfd0d8'; }
+
+let fbBar=null;
+function buildFallbackBar(){
+  fbBar=document.createElement('div'); fbBar.className='mbtn'; fbBar.hidden=true;
+  fbBar.innerHTML='<button class="navback" id="fbBack" hidden>'+ICO.back+'</button><button class="b" id="fbMain"></button>';
+  document.getElementById('app').appendChild(fbBar);
+  fbBar.querySelector('#fbMain').onclick=()=>mainAction();
+  fbBar.querySelector('#fbBack').onclick=()=>backAction();
 }
 
-/* ---- persistence (localStorage + Telegram CloudStorage mirror) ---- */
+const Nav={
+  setMain(text,{enabled=true,onClick=null}={}){
+    mainAction=onClick||(()=>{});
+    if(inTG){
+      TG.MainButton.setParams({text,color:enabled?accentHex():mutedHex(),text_color:'#ffffff',is_active:enabled,is_visible:true});
+      TG.MainButton.show();
+    }else{
+      fbBar.hidden=false;
+      const b=fbBar.querySelector('#fbMain'); b.style.display=''; b.textContent=text; b.disabled=!enabled;
+    }
+  },
+  hideMain(){ if(inTG) TG.MainButton.hide(); else if(fbBar){ const b=fbBar.querySelector('#fbMain'); b.style.display='none'; b.textContent=''; fbBar.hidden = fbBar.querySelector('#fbBack').hidden; } },
+  showBack(){ if(inTG) TG.BackButton.show(); else { fbBar.hidden=false; fbBar.querySelector('#fbBack').hidden=false; } },
+  hideBack(){ if(inTG) TG.BackButton.hide(); else if(fbBar){ fbBar.querySelector('#fbBack').hidden=true; } },
+  haptic(good){
+    if(inTG){ try{TG.HapticFeedback.notificationOccurred(good?'success':'error');}catch(e){} }
+    else if(navigator.vibrate){ try{navigator.vibrate(good?18:[14,46,14]);}catch(e){} }
+  }
+};
+
+function applyTheme(){
+  scheme = inTG ? (TG.colorScheme||'light') : (window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light');
+  document.body.className = scheme==='dark'?'tg-dark':'tg-light';
+  const root=document.documentElement;
+  ['--page','--section','--section2','--text','--text2','--hint','--separator','--line','--accent','--accent-text','--chip','--field'].forEach(v=>root.style.removeProperty(v));
+  if(inTG && TG.themeParams){
+    const t=TG.themeParams, set=(v,val)=>{ if(val) root.style.setProperty(v,val); };
+    set('--page',t.bg_color); set('--section',t.section_bg_color||t.secondary_bg_color);
+    set('--section2',t.secondary_bg_color||t.section_bg_color); set('--text',t.text_color);
+    set('--text2',t.subtitle_text_color||t.text_color); set('--hint',t.hint_color);
+    set('--separator',t.section_separator_color); set('--line',t.section_separator_color);
+    set('--chip',t.secondary_bg_color); set('--field',t.section_bg_color||t.bg_color);
+    if(t.button_color){ if(scheme==='dark') accentDark=t.button_color; else accentLight=t.button_color; set('--accent',t.button_color); }
+    if(t.button_text_color) set('--accent-text',t.button_text_color);
+  }
+  if(inTG){
+    try{
+      const pg=getComputedStyle(document.body).getPropertyValue('--page').trim()||(scheme==='dark'?'#17181b':'#efeff4');
+      if(TG.setBackgroundColor) TG.setBackgroundColor(pg);
+      if(TG.setHeaderColor) TG.setHeaderColor(pg);
+    }catch(e){}
+  }
+}
+
+/* ================= state ================= */
+let order=[], pos=0, status={}, shuffled=false, view='start', navDir=null, pendingFB=null, lastBox=null;
+const stage=document.getElementById('stage');
+const wv=document.getElementById('wv');
+const cur=()=>QUESTIONS[order[pos]];
+
 function persist(){
   const payload=JSON.stringify({order,pos,status,shuffled});
-  try{ localStorage.setItem(KEY, payload); }catch(e){}
-  if(CS){ try{ CS.setItem(KEY, payload, function(){}); }catch(e){} }
+  try{ localStorage.setItem(KEY,payload); }catch(e){}
+  if(CS){ try{ CS.setItem(KEY,payload,function(){}); }catch(e){} }
 }
 function restore(){
   try{ const d=JSON.parse(localStorage.getItem(KEY));
@@ -584,34 +435,72 @@ function restore(){
   return false;
 }
 function shuffleArr(a){const r=a.slice();for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];}return r;}
-
-function init(fresh){
-  if(!fresh && restore()){ updateShuffleBtn(); render(); return; }
-  order=QUESTIONS.map((_,i)=>i);
-  if(shuffled) order=shuffleArr(order);
-  pos=0; status={}; navDir=null;
-  render();
-}
-function updateShuffleBtn(){ document.getElementById('shuffleBtn').classList.toggle('active',shuffled); }
-
-function setProgress(){
-  const frac = pos>=order.length ? 1 : pos/order.length;
-  barFill.style.width=(frac*100)+'%';
-  if(pos>=order.length){ navCount.innerHTML='Завершено'; }
-  else{ navCount.innerHTML='Вопрос <b>'+(pos+1)+'</b> / '+order.length; }
-}
-
 function el(tag,cls,txt){const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e;}
 
-/* ---- navigation ---- */
-function goNext(){ if(pos<order.length){ navDir='left'; pos++; render(); scrollEl.scrollTop=0; } }
-function goPrev(){ if(pos>0){ navDir='right'; pos--; render(); scrollEl.scrollTop=0; } }
+function hasProgress(){ return order.length===QUESTIONS.length && (pos>0 || Object.keys(status).length>0) && pos<order.length; }
 
+function init(fresh){
+  if(fresh){
+    order=QUESTIONS.map((_,i)=>i); if(shuffled) order=shuffleArr(order);
+    pos=0; status={}; navDir=null; view='quiz'; persist(); render(); return;
+  }
+  if(!restore()){ order=QUESTIONS.map((_,i)=>i); if(shuffled) order=shuffleArr(order); pos=0; status={}; }
+  navDir=null; renderStart();
+}
+
+/* ================= start screen ================= */
+function renderStart(){
+  view='start'; stage.innerHTML='';
+  const wrap=el('div','start');
+  wrap.innerHTML=
+    '<div class="applogo">'+ICO.spiral+'</div>'+
+    '<h3>Герменевтика</h3>'+
+    '<div class="tag">тренажёр к экзамену</div>'+
+    '<p class="desc">20 вопросов в 6 форматах: тесты, соответствия, последовательности и развёрнутые ответы. С каждым витком спирали понимание поднимается выше.</p>'+
+    '<div class="stats"><div class="s"><div class="n">20</div><div class="l">вопросов</div></div>'+
+    '<div class="s"><div class="n">6</div><div class="l">форматов</div></div>'+
+    '<div class="s"><div class="n">~25</div><div class="l">минут</div></div></div>';
+  if(hasProgress()){
+    const r=el('div','resume');
+    r.innerHTML='<div class="ri">'+ICO.resume+'</div><div><div class="rt">Продолжить с вопроса '+(pos+1)+'</div><div class="rs">пройдено '+Math.round(pos/order.length*100)+'% курса</div></div>';
+    wrap.appendChild(r);
+  }
+  const ctrls=el('div','startctrls');
+  const sh=el('button','sb'+(shuffled?' on':'')); sh.innerHTML=ICO.shuffle+'<span>Перемешать</span>';
+  sh.onclick=()=>{ shuffled=!shuffled; order=QUESTIONS.map((_,i)=>i); if(shuffled)order=shuffleArr(order); pos=0; status={}; persist(); renderStart(); };
+  ctrls.appendChild(sh);
+  if(hasProgress()){
+    const rs=el('button','sb'); rs.innerHTML=ICO.resume+'<span>Сбросить</span>';
+    rs.onclick=()=>{ order=QUESTIONS.map((_,i)=>i); if(shuffled)order=shuffleArr(order); pos=0; status={}; persist(); renderStart(); };
+    ctrls.appendChild(rs);
+  }
+  wrap.appendChild(ctrls);
+  stage.appendChild(wrap);
+  wv.scrollTop=0;
+  Nav.hideBack();
+  Nav.setMain(hasProgress()?'Продолжить':'Начать',{onClick:()=>{ view='quiz'; render(); }});
+}
+
+/* ================= navigation ================= */
+function goNext(){ if(pos<order.length){ navDir='left'; pos++; render(); wv.scrollTop=0; } }
+function goPrev(){ if(pos>0){ navDir='right'; pos--; render(); wv.scrollTop=0; } }
+function onBack(){ if(view!=='quiz'){ return; } if(pos>0) goPrev(); else renderStart(); }
+backAction=onBack;
+
+/* ================= main render ================= */
+function progressStrip(){
+  const frac=pos>=order.length?1:pos/order.length;
+  const s=el('div','pstrip');
+  s.innerHTML='<span class="ct">Вопрос <b>'+(Math.min(pos+1,order.length))+'</b> / '+order.length+'</span><div class="bar"><i style="width:'+(frac*100)+'%"></i></div>';
+  return s;
+}
 function render(){
-  if(pos>=order.length){ renderSummary(); setProgress(); updateNav(); persist(); return; }
-  setProgress();
-  const q=QUESTIONS[order[pos]];
+  if(view==='start'){ renderStart(); return; }
+  if(pos>=order.length){ renderSummary(); return; }
+  Nav.showBack();
   stage.innerHTML='';
+  stage.appendChild(progressStrip());
+  const q=cur();
   const card=el('div','card');
   if(navDir==='left') card.classList.add('from-left');
   else if(navDir==='right') card.classList.add('from-right');
@@ -619,16 +508,14 @@ function render(){
 
   const head=el('div','qhead');
   const num=el('span','qnum'); num.innerHTML='<span class="dot"></span>Вопрос '+q.id;
-  head.appendChild(num);
-  head.appendChild(el('span','qtype',q.typeName));
+  head.appendChild(num); head.appendChild(el('span','qtype',q.typeName));
   card.appendChild(head);
 
   const qt=el('div','qtext'); qt.textContent=q.q;
-  if(q.poem){ qt.appendChild(el('span','poem',q.poem)); }
+  if(q.poem) qt.appendChild(el('span','poem',q.poem));
   card.appendChild(qt);
 
-  const body=el('div','body');
-  card.appendChild(body);
+  const body=el('div'); card.appendChild(body);
   stage.appendChild(card);
 
   if(q.type==='mc') renderMC(q,body,card);
@@ -639,27 +526,42 @@ function render(){
 
   renderFlag(q,card);
 
-  // feedback animation
   if(pendingFB && pendingFB.qid===q.id){
     card.classList.remove('from-left','from-right');
     card.classList.add(pendingFB.good?'fb-good':'fb-bad');
-    buzz(pendingFB.good?18:[14,46,14]);
+    Nav.haptic(pendingFB.good);
+    if(lastBox){ lastBox.classList.add('flash'); const b=lastBox; requestAnimationFrame(()=>setTimeout(()=>b.scrollIntoView({behavior:'smooth',block:'center'}),60)); }
     pendingFB=null;
   }
-  updateNav();
+  syncMain();
   persist();
 }
 
-function updateNav(){
-  const atSummary=pos>=order.length;
-  prevBtn.disabled=pos===0;
-  nextBtn.classList.toggle('is-hidden',atSummary);
-  if(!atSummary){
-    nextLbl.textContent = pos===order.length-1 ? 'Итоги' : 'Дальше';
+function advance(){ goNext(); }
+function advLabel(){ return pos===order.length-1?'Завершить':'Дальше'; }
+
+function syncMain(){
+  if(view==='start'){ return; }
+  if(pos>=order.length){ Nav.setMain('Пройти заново',{onClick:()=>init(true)}); return; }
+  const q=cur(), st=status[q.id]||{};
+  if(q.type==='mc'){
+    if(st.done) Nav.setMain(advLabel(),{onClick:advance}); else Nav.hideMain();
+  }else if(q.type==='match'){
+    if(st.done) Nav.setMain(advLabel(),{onClick:advance});
+    else Nav.setMain('Проверить',{enabled:!!st.sel&&st.sel.every(v=>v>=0),onClick:checkMatch});
+  }else if(q.type==='sequence'){
+    if(st.done) Nav.setMain(advLabel(),{onClick:advance});
+    else Nav.setMain('Проверить порядок',{enabled:!!st.build&&st.build.length===q.items.length,onClick:checkSeq});
+  }else if(q.type==='fill'){
+    if(st.done) Nav.setMain(advLabel(),{onClick:advance});
+    else Nav.setMain('Проверить',{enabled:!!st.vals&&st.vals.every(v=>v.trim()!==''),onClick:checkFill});
+  }else if(q.type==='open'){
+    if(st.revealed) Nav.setMain(advLabel(),{onClick:advance});
+    else Nav.setMain('Показать образец',{onClick:()=>{ (status[q.id]||(status[q.id]={})).revealed=true; render(); }});
   }
 }
 
-/* ---------- MC ---------- */
+/* ================= MC ================= */
 function renderMC(q,body,card){
   const done=status[q.id]&&status[q.id].done;
   q.options.forEach((opt,i)=>{
@@ -668,188 +570,126 @@ function renderMC(q,body,card){
     b.appendChild(el('span',null,opt));
     if(done){
       b.disabled=true;
-      if(i===q.correct){ b.classList.add('correct'); const r=el('span','res');r.innerHTML=ICO.check;b.appendChild(r); }
-      if(status[q.id].pick===i&&i!==q.correct){ b.classList.add('wrong'); const r=el('span','res');r.innerHTML=ICO.x;b.appendChild(r); }
+      if(i===q.correct){ b.classList.add('correct'); const r=el('span','res'); r.innerHTML=ICO.check; b.appendChild(r); }
+      if(status[q.id].pick===i&&i!==q.correct){ b.classList.add('wrong'); const r=el('span','res'); r.innerHTML=ICO.x; b.appendChild(r); }
     }else{
-      b.onclick=()=>{
-        const good=(i===q.correct);
-        status[q.id]={done:true,pick:i,result:good?'correct':'wrong'};
-        pendingFB={qid:q.id,good};
-        render();
-      };
+      b.onclick=()=>{ const good=(i===q.correct); status[q.id]={done:true,pick:i,result:good?'correct':'wrong'}; pendingFB={qid:q.id,good}; render(); };
     }
     body.appendChild(b);
   });
   if(done) showExpl(q,card,status[q.id].result==='correct');
 }
 
-/* ---------- MATCH / CATEGORIZE ---------- */
+/* ================= MATCH ================= */
 function renderMatch(q,body,card){
-  if(!status[q.id] || !status[q.id].sel){ status[q.id]={sel:new Array(q.left.length).fill(-1),done:false}; }
+  if(!status[q.id]||!status[q.id].sel) status[q.id]={sel:new Array(q.left.length).fill(-1),done:false};
   const cur=status[q.id];
-  if(!cur.optOrder){ cur.optOrder = (!q.mini) ? shuffleArr(q.options.map((_,i)=>i)) : q.options.map((_,i)=>i); }
+  if(!cur.optOrder) cur.optOrder = (!q.mini)?shuffleArr(q.options.map((_,i)=>i)):q.options.map((_,i)=>i);
   q.left.forEach((lf,li)=>{
-    const row=el('div','row'+(q.mini?' mini':''));
-    const lab=el('div','lbl');
-    lab.appendChild(el('span','tag',LETTERS[li]));
-    lab.appendChild(document.createTextNode(lf));
+    const row=el('div','row');
+    const lab=el('div','lbl'); lab.appendChild(el('span','tag',LETTERS[li])); lab.appendChild(document.createTextNode(lf));
     row.appendChild(lab);
-    const wrap=el('div','selwrap');
+    const wrap=el('div','sel');
     const sel=document.createElement('select');
     sel.appendChild(new Option('— выберите —',-1));
-    cur.optOrder.forEach(oi=>{ sel.appendChild(new Option(q.options[oi], oi)); });
-    sel.value=cur.sel[li];
-    sel.disabled=cur.done;
-    sel.onchange=()=>{ cur.sel[li]=parseInt(sel.value); persist(); };
-    if(cur.done){ row.classList.add(cur.sel[li]===q.answer[li]?'ok':'no'); }
-    wrap.appendChild(sel);
-    row.appendChild(wrap);
-    body.appendChild(row);
+    cur.optOrder.forEach(oi=>sel.appendChild(new Option(q.options[oi],oi)));
+    sel.value=cur.sel[li]; sel.disabled=cur.done;
+    sel.onchange=()=>{ cur.sel[li]=parseInt(sel.value); persist(); syncMain(); };
+    if(cur.done) row.classList.add(cur.sel[li]===q.answer[li]?'ok':'no');
+    wrap.appendChild(sel); row.appendChild(wrap); body.appendChild(row);
   });
-  if(!cur.done){
-    const chk=el('button','btn primary full','Проверить');
-    chk.onclick=()=>{
-      if(!cur.sel.every(v=>v>=0)){ chk.textContent='Заполните все строки'; setTimeout(()=>chk.textContent='Проверить',1200); return; }
-      const ok=cur.sel.every((v,i)=>v===q.answer[i]);
-      cur.done=true; cur.result=ok?'correct':'wrong';
-      pendingFB={qid:q.id,good:ok};
-      render();
-    };
-    body.appendChild(chk);
-  }else{
-    showExpl(q,card,cur.result==='correct');
-  }
+  if(cur.done) showExpl(q,card,cur.result==='correct');
 }
+function checkMatch(){ const q=cur(),st=status[q.id]; const ok=st.sel.every((v,i)=>v===q.answer[i]); st.done=true; st.result=ok?'correct':'wrong'; pendingFB={qid:q.id,good:ok}; render(); }
 
-/* ---------- SEQUENCE ---------- */
+/* ================= SEQUENCE ================= */
 function renderSeq(q,body,card){
   let st=status[q.id];
   if(!st){ status[q.id]={pool:shuffleArr(q.items.map((_,i)=>i)),build:[],done:false}; st=status[q.id]; }
-  const hint=el('div','seq-hint');
-  hint.innerHTML=ICO.list+'<span>Нажимайте пункты по порядку — они собираются сверху. Клик по собранному вернёт его вниз.</span>';
+  const hint=el('div','seqhint'); hint.innerHTML=ICO.list+'<span>Нажимайте пункты по порядку — они собираются сверху. Клик по собранному вернёт его вниз.</span>';
   body.appendChild(hint);
-
-  const buildWrap=el('div','seq-build');
   st.build.forEach((idx,bi)=>{
     const c=el('button','chip');
-    if(st.done){ c.classList.add(idx===q.answer[bi]?'ok':'no'); }
+    if(st.done) c.classList.add(idx===q.answer[bi]?'ok':'no');
     c.appendChild(el('span','ord',String(bi+1)));
     c.appendChild(el('span',null,q.items[idx]));
-    if(!st.done){ c.onclick=()=>{ st.build.splice(bi,1); st.pool.push(idx); persist(); render(); }; }
-    buildWrap.appendChild(c);
+    if(!st.done) c.onclick=()=>{ st.build.splice(bi,1); st.pool.push(idx); persist(); render(); };
+    else c.disabled=true;
+    body.appendChild(c);
   });
-  body.appendChild(buildWrap);
-
   if(!st.done){
-    if(st.pool.length){
-      const div=el('div','seq-divider'); div.appendChild(el('span',null,'осталось расставить')); body.appendChild(div);
-    }
-    const poolWrap=el('div','seq-pool');
-    st.pool.forEach((idx)=>{
+    if(st.pool.length){ const div=el('div','seqdiv'); div.appendChild(el('span',null,'осталось расставить')); body.appendChild(div); }
+    st.pool.forEach(idx=>{
       const c=el('button','chip pool');
-      c.appendChild(el('span','ord','+'));
-      c.appendChild(el('span',null,q.items[idx]));
+      c.appendChild(el('span','ord','+')); c.appendChild(el('span',null,q.items[idx]));
       c.onclick=()=>{ st.build.push(idx); st.pool=st.pool.filter(x=>x!==idx); persist(); render(); };
-      poolWrap.appendChild(c);
+      body.appendChild(c);
     });
-    body.appendChild(poolWrap);
-    if(st.build.length===q.items.length){
-      const chk=el('button','btn primary full','Проверить порядок');
-      chk.onclick=()=>{
-        const ok=st.build.every((v,i)=>v===q.answer[i]);
-        st.done=true; st.result=ok?'correct':'wrong';
-        pendingFB={qid:q.id,good:ok};
-        render();
-      };
-      body.appendChild(chk);
-    }
   }else{
-    showExpl(q,card,st.result==='correct',()=>{
-      const co=el('p');
-      co.innerHTML='<span class="strong">Верный порядок:</span> '+q.answer.map((idx,i)=>(i+1)+'. '+q.items[idx]).join('  ·  ');
-      return co;
-    });
+    showExpl(q,card,st.result==='correct',()=>{ const p=el('p'); p.innerHTML='<span class="strong">Верный порядок:</span> '+q.answer.map((idx,i)=>(i+1)+'. '+q.items[idx]).join('  ·  '); return p; });
   }
 }
+function checkSeq(){ const q=cur(),st=status[q.id]; const ok=st.build.every((v,i)=>v===q.answer[i]); st.done=true; st.result=ok?'correct':'wrong'; pendingFB={qid:q.id,good:ok}; render(); }
 
-/* ---------- FILL ---------- */
+/* ================= FILL ================= */
 function renderFill(q,body,card){
   let st=status[q.id];
   if(!st){ status[q.id]={vals:new Array(q.inputs).fill(''),done:false}; st=status[q.id]; }
   for(let i=0;i<q.inputs;i++){
-    const inp=document.createElement('input');
-    inp.className='fill-in'; inp.type='text';
+    const inp=document.createElement('input'); inp.className='fill-in'; inp.type='text';
     inp.placeholder=q.inputs>1?('Слово '+(i+1)):'Ваш ответ';
     inp.value=st.vals[i]; inp.disabled=st.done;
-    if(st.done){ inp.classList.add(st.result==='correct'?'ok':'no'); }
-    inp.oninput=()=>{ st.vals[i]=inp.value; persist(); };
-    inp.onkeydown=(e)=>{ if(e.key==='Enter'&&!st.done){ doCheck(); } };
+    if(st.done) inp.classList.add(st.result==='correct'?'ok':'no');
+    inp.oninput=()=>{ st.vals[i]=inp.value; persist(); syncMain(); };
+    inp.onkeydown=(e)=>{ if(e.key==='Enter'&&!st.done&&st.vals.every(v=>v.trim()!=='')) checkFill(); };
     body.appendChild(inp);
   }
-  function doCheck(){
-    const joined=st.vals.join(' ').toLowerCase();
-    const ok=q.accept.some(grp=>grp.every(kw=>joined.includes(kw)));
-    st.done=true; st.result=ok?'correct':'wrong';
-    pendingFB={qid:q.id,good:ok};
-    render();
-  }
   if(!st.done){
-    const act=el('div','actions');
-    const chk=el('button','btn primary','Проверить'); chk.onclick=doCheck;
-    const reveal=el('button','btn ghost','Не помню, показать');
-    reveal.onclick=()=>{ st.done=true; st.result='wrong'; pendingFB={qid:q.id,good:false}; render(); };
-    act.appendChild(chk); act.appendChild(reveal);
-    body.appendChild(act);
+    const rev=el('button','ghostbtn','Не помню, показать ответ');
+    rev.onclick=()=>{ st.done=true; st.result='wrong'; pendingFB={qid:q.id,good:false}; render(); };
+    body.appendChild(rev);
   }else{
-    showExpl(q,card,st.result==='correct',()=>{
-      const a=el('p'); a.innerHTML='<span class="strong">Ответ:</span> '+q.answer; return a;
-    });
+    showExpl(q,card,st.result==='correct',()=>{ const a=el('p'); a.innerHTML='<span class="strong">Ответ:</span> '+q.answer; return a; });
   }
 }
+function checkFill(){ const q=cur(),st=status[q.id]; const joined=st.vals.join(' ').toLowerCase(); const ok=q.accept.some(grp=>grp.every(kw=>joined.includes(kw))); st.done=true; st.result=ok?'correct':'wrong'; pendingFB={qid:q.id,good:ok}; render(); }
 
-/* ---------- OPEN ---------- */
+/* ================= OPEN ================= */
 function renderOpen(q,body,card){
   let st=status[q.id];
   if(!st){ status[q.id]={revealed:false,rated:null}; st=status[q.id]; }
   if(!st.revealed){
-    const b=el('button','btn primary full','Показать образец ответа');
-    b.onclick=()=>{ st.revealed=true; render(); };
-    body.appendChild(b);
-  }else{
-    const box=el('div','answerbox');
-    const h=el('h4'); h.innerHTML=ICO.bulb+'Образец ответа'; box.appendChild(h);
-    if(q.model.intro){ const p=el('p'); p.innerHTML=q.model.intro; box.appendChild(p); }
-    const ul=el('ul');
-    q.model.points.forEach(pt=>{ const li=el('li'); li.innerHTML=pt; ul.appendChild(li); });
-    box.appendChild(ul);
-    card.appendChild(box);
-
-    const act=el('div','actions');
-    const know=el('button','btn know','Знал');
-    const again=el('button','btn again','Повторить');
-    if(st.rated==='known')know.classList.add('active');
-    if(st.rated==='review')again.classList.add('active');
-    know.onclick=()=>{ st.rated='known'; buzz(18); render(); };
-    again.onclick=()=>{ st.rated='review'; buzz(12); render(); };
-    act.appendChild(know); act.appendChild(again);
-    card.appendChild(act);
+    const ph=el('p'); ph.style.cssText='font-size:14px;line-height:1.55;color:var(--hint);';
+    ph.textContent='Сформулируйте ответ мысленно или на бумаге, затем откройте образец и оцените себя.';
+    body.appendChild(ph);
+    return;
   }
+  const box=el('div','answerbox');
+  const h=el('h4'); h.innerHTML=ICO.bulb+'Образец ответа'; box.appendChild(h);
+  if(q.model.intro){ const p=el('p'); p.innerHTML=q.model.intro; box.appendChild(p); }
+  const ul=el('ul'); q.model.points.forEach(pt=>{ const li=el('li'); li.innerHTML=pt; ul.appendChild(li); }); box.appendChild(ul);
+  card.appendChild(box); lastBox=box;
+  const rate=el('div','rate');
+  const know=el('button','rb know'); know.innerHTML=ICO.check+'Знал';
+  const again=el('button','rb again'); again.innerHTML=ICO.resume+'Повторить';
+  if(st.rated==='known')know.classList.add('active');
+  if(st.rated==='review')again.classList.add('active');
+  know.onclick=()=>{ st.rated='known'; Nav.haptic(true); render(); };
+  again.onclick=()=>{ st.rated='review'; Nav.haptic(false); render(); };
+  rate.appendChild(know); rate.appendChild(again); card.appendChild(rate);
 }
 
-/* ---------- shared ---------- */
+/* ================= shared ================= */
 function showExpl(q,card,good,extraFn){
   const v=el('div','verdict '+(good?'good':'bad'));
-  const ico=el('span','vico'); ico.innerHTML=good?ICO.check:ICO.x;
-  v.appendChild(ico);
-  v.appendChild(document.createTextNode(good?'Верно':'Неверно'));
-  card.appendChild(v);
+  const ico=el('span','vico'); ico.innerHTML=good?ICO.check:ICO.x; v.appendChild(ico);
+  v.appendChild(document.createTextNode(good?'Верно':'Неверно')); card.appendChild(v);
   const box=el('div','answerbox');
   const h=el('h4'); h.innerHTML=ICO.bulb+'Пояснение'; box.appendChild(h);
   if(extraFn){ const ex=extraFn(); if(ex)box.appendChild(ex); }
   const p=el('p'); p.textContent=q.expl; box.appendChild(p);
-  card.appendChild(box);
+  card.appendChild(box); lastBox=box;
 }
-
 function renderFlag(q,card){
   const flagged=status['flag_'+q.id];
   const flag=el('button','flag'+(flagged?' on':''));
@@ -858,8 +698,9 @@ function renderFlag(q,card){
   card.appendChild(flag);
 }
 
-/* ---------- SUMMARY ---------- */
+/* ================= SUMMARY ================= */
 function renderSummary(){
+  view='quiz'; Nav.showBack();
   let autoTotal=0,autoCorrect=0,openKnown=0,openTotal=0,toReview=[];
   QUESTIONS.forEach(q=>{
     const st=status[q.id];
@@ -878,73 +719,44 @@ function renderSummary(){
   stage.innerHTML='';
   const s=el('div','summary');
   const seal=el('div','seal'); seal.innerHTML=ICO.award; s.appendChild(seal);
-  s.appendChild(el('h2','Круг пройден'));
-  s.appendChild(el('p','sub','Спираль делает виток. Повторите отмеченное и пройдите снова — с каждым разом понимание поднимается на ступень выше.'));
-
+  s.appendChild(el('h3','Круг пройден'));
+  s.appendChild(el('p','sub','Спираль делает виток. Повторите отмеченное и пройдите снова — понимание поднимается на ступень выше.'));
   const sc=el('div','scores');
-  const a=el('div','score'); a.innerHTML='<div class="big">'+autoCorrect+'/'+autoTotal+'</div><div class="lab">закрытые задания</div>';
-  const o=el('div','score'); o.innerHTML='<div class="big">'+openKnown+'/'+openTotal+'</div><div class="lab">развёрнутые «знал»</div>';
+  const a=el('div','sc'); a.innerHTML='<div class="big">'+autoCorrect+'/'+autoTotal+'</div><div class="lab">закрытые задания</div>';
+  const o=el('div','sc'); o.innerHTML='<div class="big">'+openKnown+'/'+openTotal+'</div><div class="lab">развёрнутые «знал»</div>';
   sc.appendChild(a); sc.appendChild(o); s.appendChild(sc);
-
-  const rev=el('div','reviewlist'+(toReview.length?'':' clean'));
-  rev.innerHTML = toReview.length
-    ? '<b>К повторению:</b> вопросы № '+toReview.join(', ')+'.'
-    : '<b>Отлично — ничего не отмечено к повторению.</b>';
+  const rev=el('div','reviewl'+(toReview.length?'':' clean'));
+  rev.innerHTML = toReview.length ? '<b>К повторению:</b> вопросы № '+toReview.join(', ')+'.' : '<b>Отлично — ничего не отмечено к повторению.</b>';
   s.appendChild(rev);
-
-  const act=el('div','actions');
-  const again=el('button','btn primary','Пройти заново'); again.onclick=()=>init(true);
-  const sh=el('button','btn','Перемешать и пройти');
-  sh.onclick=()=>{ shuffled=true; updateShuffleBtn(); init(true); };
-  act.appendChild(again); act.appendChild(sh);
-  s.appendChild(act);
   stage.appendChild(s);
+  wv.scrollTop=0;
+  Nav.setMain('Пройти заново',{onClick:()=>init(true)});
+  persist();
 }
 
-/* ---------- toolbar ---------- */
-document.getElementById('shuffleBtn').onclick=function(){
-  shuffled=!shuffled; updateShuffleBtn(); init(true);
-};
-document.getElementById('restartBtn').onclick=()=>{ if(confirm('Начать заново? Прогресс будет сброшен.')) init(true); };
-prevBtn.onclick=goPrev;
-nextBtn.onclick=goNext;
-
-/* ---------- swipe ---------- */
+/* ================= gestures ================= */
 let tX=null,tY=null,sw=false;
-scrollEl.addEventListener('touchstart',e=>{
-  if(e.touches.length!==1){ tX=null; return; }
-  if(e.target.closest('select,input,textarea')){ tX=null; return; }
+wv.addEventListener('touchstart',e=>{
+  if(view!=='quiz'||pos>=order.length||e.touches.length!==1||e.target.closest('select,input,textarea')){ tX=null; return; }
   tX=e.touches[0].clientX; tY=e.touches[0].clientY; sw=false;
 },{passive:true});
-scrollEl.addEventListener('touchmove',e=>{
-  if(tX==null)return;
-  const dx=e.touches[0].clientX-tX, dy=e.touches[0].clientY-tY;
-  if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>14) sw=true;
-},{passive:true});
-scrollEl.addEventListener('touchend',e=>{
-  if(tX==null)return;
-  const dx=e.changedTouches[0].clientX-tX, dy=e.changedTouches[0].clientY-tY;
-  tX=null;
-  if(sw&&Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.4){ if(dx<0)goNext(); else goPrev(); }
-});
-/* keyboard */
-document.addEventListener('keydown',e=>{
-  if(e.target.closest('input,select,textarea'))return;
-  if(e.key==='ArrowRight')goNext();
-  else if(e.key==='ArrowLeft')goPrev();
-});
+wv.addEventListener('touchmove',e=>{ if(tX==null)return; const dx=e.touches[0].clientX-tX,dy=e.touches[0].clientY-tY; if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>14)sw=true; },{passive:true});
+wv.addEventListener('touchend',e=>{ if(tX==null)return; const dx=e.changedTouches[0].clientX-tX,dy=e.changedTouches[0].clientY-tY; tX=null; if(sw&&Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.4){ if(dx<0)goNext(); else goPrev(); } });
+document.addEventListener('keydown',e=>{ if(view!=='quiz'||e.target.closest('input,select,textarea'))return; if(e.key==='ArrowRight')goNext(); else if(e.key==='ArrowLeft')goPrev(); });
 
-/* ---------- bootstrap ---------- */
+/* ================= boot ================= */
 function startApp(){
-  if(TG){
-    try{
-      TG.ready();
-      TG.expand();
-      if(TG.disableVerticalSwipes) TG.disableVerticalSwipes();
-      if(TG.setHeaderColor) TG.setHeaderColor('#eef0f6');
-      if(TG.setBackgroundColor) TG.setBackgroundColor('#eef0f6');
-    }catch(e){}
+  if(inTG){
+    TG.ready(); try{TG.expand();}catch(e){}
+    try{ if(TG.disableVerticalSwipes) TG.disableVerticalSwipes(); }catch(e){}
+    try{ TG.MainButton.onClick(()=>mainAction()); }catch(e){}
+    try{ TG.BackButton.onClick(()=>backAction()); }catch(e){}
+    try{ TG.onEvent('themeChanged',applyTheme); }catch(e){}
+  }else{
+    buildFallbackBar();
+    if(window.matchMedia) matchMedia('(prefers-color-scheme:dark)').addEventListener('change',applyTheme);
   }
+  applyTheme();
   init();
 }
 
@@ -953,17 +765,15 @@ if(CS){
   let settled=false;
   const go=()=>{ if(!settled){ settled=true; startApp(); } };
   try{
-    CS.getItem(KEY, function(err, val){
-      if(!err && val){ try{ localStorage.setItem(KEY, val); }catch(e){} }
+    CS.getItem(KEY,function(err,val){
+      if(!err && val){ try{ localStorage.setItem(KEY,val); }catch(e){} }
       go();
     });
-    setTimeout(go, 1500); // fallback if CloudStorage never calls back
+    setTimeout(go,1500); // fallback if CloudStorage never calls back
   }catch(e){ startApp(); }
 }else{
   startApp();
 }
 </script>
-
-
-
-</body></html>
+</body>
+</html>
