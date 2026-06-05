@@ -490,14 +490,19 @@ function init(fresh){
 function renderStart(){
   view='start'; stage.innerHTML='';
   const wrap=el('div','start');
+  // Счётчики вычисляются из массива QUESTIONS, чтобы не расходиться с реальностью.
+  const qCount=QUESTIONS.length;
+  const fmtCount=new Set(QUESTIONS.map(q=>q.type)).size;
+  const mins=Math.round(qCount); // ≈1 минута на вопрос
+  const wq=(n=>{const a=Math.abs(n)%100,b=n%10;return a>10&&a<20?'вопросов':b>1&&b<5?'вопроса':b===1?'вопрос':'вопросов';})(qCount);
   wrap.innerHTML=
     '<div class="applogo">'+ICO.spiral+'</div>'+
     '<h3>Герменевтика</h3>'+
     '<div class="tag">тренажёр к экзамену</div>'+
-    '<p class="desc">15 вопросов в форматах: тесты, соответствия, последовательности и развёрнутые ответы. С каждым витком спирали понимание поднимается выше.</p>'+
-    '<div class="stats"><div class="s"><div class="n">14</div><div class="l">вопросов</div></div>'+
-    '<div class="s"><div class="n">6</div><div class="l">форматов</div></div>'+
-    '<div class="s"><div class="n">~15</div><div class="l">минут</div></div></div>';
+    '<p class="desc">'+qCount+' '+wq+' в форматах: тесты, соответствия, последовательности и развёрнутые ответы. С каждым витком спирали понимание поднимается выше.</p>'+
+    '<div class="stats"><div class="s"><div class="n">'+qCount+'</div><div class="l">вопросов</div></div>'+
+    '<div class="s"><div class="n">'+fmtCount+'</div><div class="l">форматов</div></div>'+
+    '<div class="s"><div class="n">~'+mins+'</div><div class="l">минут</div></div></div>';
   if(hasProgress()){
     const r=el('div','resume');
     r.innerHTML='<div class="ri">'+ICO.resume+'</div><div><div class="rt">Продолжить с вопроса '+(pos+1)+'</div><div class="rs">пройдено '+Math.round(pos/order.length*100)+'% курса</div></div>';
