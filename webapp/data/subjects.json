@@ -1,0 +1,43 @@
+{
+  "subjects": [
+    {
+      "id": "germenevtika",
+      "title": "Герменевтика",
+      "subtitle": "основы · тренажёр к экзамену",
+      "file": "germenevtika.json",
+      "icon": "spiral",
+      "modes": [
+        "quiz"
+      ],
+      "quizCount": 14,
+      "cardCount": 0,
+      "desc": "Базовые понятия и методы толкования: подходы к Писанию, грамматический и текстуальный анализ, параллелизм, формы переносного значения."
+    },
+    {
+      "id": "istoriya-germenevtiki",
+      "title": "История герменевтики",
+      "subtitle": "персоналии и школы",
+      "file": "istoriya-germenevtiki.json",
+      "icon": "clock",
+      "modes": [
+        "quiz"
+      ],
+      "quizCount": 10,
+      "cardCount": 0,
+      "desc": "Ключевые мыслители и понятия: Шлейермахер, Гадамер, Рикёр, Дильтей, Барт; аллегорический метод, герменевтический круг и спираль."
+    },
+    {
+      "id": "istoriya-hristianstva",
+      "title": "История христианства",
+      "subtitle": "билеты 1–10 · карточки",
+      "file": "istoriya-hristianstva.json",
+      "icon": "book",
+      "modes": [
+        "flashcards"
+      ],
+      "quizCount": 0,
+      "cardCount": 93,
+      "desc": "Карточки к экзамену по 10 билетам: реформация, ранняя Церковь, расколы, пробуждения."
+    }
+  ]
+}
